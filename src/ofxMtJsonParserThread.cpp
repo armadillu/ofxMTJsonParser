@@ -18,7 +18,7 @@ ofxMtJsonParserThread<O>::ofxMtJsonParserThread(){
 
 template <class O>
 void ofxMtJsonParserThread<O>::startParsing(ofxJSONElement* json_,
-										 ofxMtJsonParserConfig config_,
+										 ofxMtJsonParserArgs config_,
 										 ofMutex * printMutex_){
 	json = json_;
 	config = config_;
@@ -32,19 +32,23 @@ void ofxMtJsonParserThread<O>::threadedFunction(){
 	try {
 		getPocoThread().setName("ofxMtJsonParserThread");
 	} catch (Poco::SystemException exc) {
+		printMutex->lock();
 		ofLogError("ofxMtJsonParserThread") << exc.what() << " " << exc.message()
 		<< " " << exc.displayText();
+		printMutex->unlock();
 	}
-	numObjectsToParse = getNumEntriesInJson(json);
+	numObjectsToParse = config.endIndex - config.startIndex;
 	parseJsonSubsetThread();
+	printMutex->lock();
 	ofLogNotice("ofxMtJsonParserThread")<< "Parsing Thread " << config.threadID << " finished";
+	printMutex->unlock();
 	stopThread();
 }
 
 template <class O>
 void ofxMtJsonParserThread<O>::parseJsonSubsetThread(){
 
-	ofLogError("ofxMtJsonParserThread") << "your subclass must implement this!";
+	ofLogError("ofxMtJsonParserThread") << "Your subclass must implement this!";
 	//in your subclass, use json*, printMutex* and config to parse
 	//the JSON elements from config.startIndex to config.endIndex
 }
@@ -62,8 +66,7 @@ int ofxMtJsonParserThread<O>::getNumObjectsToParse(){
 
 template <class O>
 int ofxMtJsonParserThread<O>::getNumObjectsLeftToParse(){
-	ofLogNotice("ofxMtJsonParserThread") << "getNumObjectsLeftToParse " << numParsedObjects<< " " <<numObjectsToParse ;
-	return numParsedObjects - numObjectsToParse;
+	return numObjectsToParse - numParsedObjects;
 }
 
 template <class O>

@@ -11,7 +11,7 @@
 
 #include "ofThread.h"
 #include "ofxJSON.h"
-#include "ofxMtJsonParseConfig.h"
+#include "ofxMtJsonParserArgs.h"
 #include "ofxMtJsonParserUtils.h"
 
 
@@ -23,7 +23,7 @@ public:
 	ofxMtJsonParserThread();
 
 	void startParsing(ofxJSONElement* json_,
-					  ofxMtJsonParserConfig config,
+					  ofxMtJsonParserArgs config,
 					  ofMutex * printMutex_);
 
 
@@ -53,7 +53,7 @@ protected:
 	// TO BE USED BY SUBCLASS ////////////////////////////////////////
 	ofxJSONElement* json;
 	ofMutex * printMutex;
-	ofxMtJsonParserConfig config;
+	ofxMtJsonParserArgs config;
 
 private:
 

@@ -19,8 +19,9 @@ template <class P,class O>
 void ofxMtJsonParser<P,O>::downloadAndParse(string jsonURL_,
 										  string jsonDownloadDir_,
 										  int numThreads_,
-										  ofxMtJsonParserConfig config){
+										  ofxMtJsonParserArgs* config_){
 	numThreads = numThreads_;
+	config = config_;
 	jsonDownloadDir = jsonDownloadDir_;
 	jsonURL = jsonURL_;
 	setState(DOWNLOADING_JSON);
@@ -72,16 +73,17 @@ void ofxMtJsonParser<P,O>::checkLocalJsonAndSplitWorkloads(){
 			int start, end;
 			start = floor(i * numObjectsPerThread);
 
-			if (i < threads.size() -1){
-				end = floor((i+1) * numObjectsPerThread);
+			if (i < numThreads -1){
+				end = floor((i+1) * numObjectsPerThread) - 1;
 			}else{ //special case for last core, int division might not be even
-				end = numEntries;
+				end = numEntries - 1 ;
 			}
-			ofxMtJsonParserConfig config;
-			config.threadID = i;
-			config.startIndex = start;
-			config.endIndex = end;
-			threadConfigs.push_back(config);
+			ofxMtJsonParserArgs tConfig = *config;
+			tConfig.threadID = i;
+			tConfig.startIndex = start;
+			tConfig.endIndex = end;
+
+			threadConfigs.push_back(tConfig);
 		}
 		setState(PARSING_JSON_IN_SUBTHREADS);
 	}else{
@@ -94,7 +96,7 @@ template <class P,class O>
 void ofxMtJsonParser<P,O>::startParsingInSubThreads(){
 	for(int i = 0; i < threads.size(); i++){
 		ofxMtJsonParserThread<O>* pjt = threads[i];
-		ofxMtJsonParserConfig cfg = threadConfigs[i];
+		ofxMtJsonParserArgs cfg = threadConfigs[i];
 		pjt->startParsing(json, cfg, &mutex);
 	}
 }
@@ -103,7 +105,6 @@ void ofxMtJsonParser<P,O>::startParsingInSubThreads(){
 template <class P,class O>
 void ofxMtJsonParser<P,O>::mergeThreadResults(){
 
-	ofLog() << "mergeThreadResults";
 	if (parsedObjects.size()){
 		ofLogError("ofxMtJsonParser") << "parsed object list not empty?";
 	}
@@ -111,8 +112,6 @@ void ofxMtJsonParser<P,O>::mergeThreadResults(){
 
 	for(int i = 0; i < threads.size(); i++){
 		vector<O*> threadObjects = threads[i]->getParsedObjects();
-		ofLog() << "num t obj " << threadObjects.size();
-
 		parsedObjects.insert(parsedObjects.begin(), threadObjects.begin(), threadObjects.end());
 	}
 }
@@ -120,7 +119,7 @@ void ofxMtJsonParser<P,O>::mergeThreadResults(){
 
 template <class P,class O>
 void ofxMtJsonParser<P,O>::setState(State s){
-	ofLogNotice("ofxMtJsonParser") << "setState: " << (int)s;
+
 	state = s;
 	switch(state){
 		case DOWNLOADING_JSON:
@@ -175,9 +174,7 @@ void ofxMtJsonParser<P,O>::update(){
 			break;
 
 		case MERGE_THREAD_RESULTS:
-			ofLog() << "MERGE_THREAD_RESULTS update";
 			if(!isThreadRunning()){
-				ofLog() << "MERGE_THREAD_RESULTS finished";
 				setState(FINISHED);
 			}
 			break;
@@ -191,7 +188,9 @@ void ofxMtJsonParser<P,O>::updateParsing(){
 	int numRunning = 0;
 	int numJsonObjectsRemaining = 0;
 	for(int i = 0; i < threads.size(); i++){
-		numJsonObjectsRemaining += threads[i]->getNumObjectsLeftToParse();
+		int left = threads[i]->getNumObjectsLeftToParse();
+		ofLog() << "thread " << i << " left to parse: " << left;
+		numJsonObjectsRemaining += left;
 		if(threads[i]->isThreadRunning()) numRunning++;
 	}
 	if(numRunning == 0 && numJsonObjectsRemaining == 0){ //json parse finished, all theads done!

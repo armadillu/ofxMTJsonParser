@@ -8,8 +8,13 @@ void ofApp::setup(){
 	ofAddListener(jsonParser.eventDownloadFailed, this, &ofApp::jsonDownloadFailed);
 	ofAddListener(jsonParser.eventDontentReady, this, &ofApp::jsonContentReady);
 
-	ofxMtJsonParserConfig myConfig;
-	jsonParser.downloadAndParse("http://129.22.220.12/api/data/", "json", 1, myConfig);
+	myConfig.verbose = true;
+
+	jsonParser.downloadAndParse("http://129.22.220.12/api/data/", //json url
+								"json", //directory where to save
+								5, //num threads
+								&myConfig //my config to pass to the threads
+								);
 }
 
 void ofApp::jsonDownloadFailed(bool & arg){

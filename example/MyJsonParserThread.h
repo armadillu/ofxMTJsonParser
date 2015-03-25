@@ -24,28 +24,37 @@ public:
 
 		vector<string>allKeys = jsonRef["data"].getMemberNames();
 
+		//both included
 		int start = config.startIndex;
 		int end = config.endIndex;
 
-		//only parse our subset of the JSON objects
+		//only parse our subset of the JSON objects: [start .. end]
+		for(int i = start; i <= end; i++){
 
-		for(int i = start; i < end; i++){
-			string key = allKeys[i];
-			Json::Value &thisObject = jsonRef["data"][key];
+			try{
+				string key = allKeys[i];
+				Json::Value &thisObject = jsonRef["data"][key];
 
-			MyParseableObject * o = new MyParseableObject();
+				//make new object
+				MyParseableObject * o = new MyParseableObject();
 
-			o->title = thisObject["title"].asString();
-			o->description = thisObject["description"].asString();
-			o->location = thisObject["location"].asString();
+				//parse stuff into it!
+				o->setTitle(thisObject["title"].asString());
+				o->setDescription(thisObject["description"].asString());
 
-			////////////////////////////////////////////////////////////////////
-			// THIS IS KEY! store the new parsed object in the superclass array
-			// and update progress!/////////////////////////////////////////////
-			parsedObjects.push_back(o);
-			numParsedObjects = i - start + 1;
-			////////////////////////////////////////////////////////////////////
-			////////////////////////////////////////////////////////////////////
+				////////////////////////////////////////////////////////////////////
+				// THIS IS KEY! store the new parsed object in the superclass array
+				// and update progress!/////////////////////////////////////////////
+				parsedObjects.push_back(o);
+				numParsedObjects = i - start;
+				////////////////////////////////////////////////////////////////////
+				////////////////////////////////////////////////////////////////////
+
+			} catch (Exception exc) {
+				printMutex->lock();
+				ofLogError("MyJsonParserThread") << exc.what() << " " << exc.message() << " " << exc.displayText() << " WHILE PARSING " << i;
+				printMutex->unlock();
+			}
 		}
 	}
 

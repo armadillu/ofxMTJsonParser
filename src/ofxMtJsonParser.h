@@ -12,7 +12,7 @@
 #include "ofMain.h"
 #include "ofxSimpleHttp.h"
 #include "ofxJSON.h"
-#include "ofxMtJsonParseConfig.h"
+#include "ofxMtJsonParserArgs.h"
 
 #include "ofxMtJsonParserThread.h"
 #include "ofxMtJsonParserThread.cpp"//NOTE THE INCLUSION OF .CPP!! Bc of the templated code
@@ -30,7 +30,7 @@ public:
 	void downloadAndParse(string jsonURL_,
 						  string jsonDownloadDir_,
 						  int numThreads,
-						  ofxMtJsonParserConfig config);
+						  ofxMtJsonParserArgs* config);
 
 	void checkLocalJsonAndSplitWorkloads();
 
@@ -64,11 +64,13 @@ protected:
 	string jsonAbsolutePath;
 	ofxJSONElement * json;
 
+	ofxMtJsonParserArgs *config;
+
 	ofMutex mutex;
 
 	int numThreads;
 	vector<ofxMtJsonParserThread<O>*> threads;
-	vector<ofxMtJsonParserConfig> threadConfigs;
+	vector<ofxMtJsonParserArgs> threadConfigs;
 
 	void setState(State s);
 
