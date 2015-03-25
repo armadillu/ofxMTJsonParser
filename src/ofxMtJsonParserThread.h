@@ -14,8 +14,8 @@
 #include "ofxMtJsonParseConfig.h"
 #include "ofxMtJsonParserUtils.h"
 
-class ofxParseableObject;
 
+template <class O>
 class ofxMtJsonParserThread: public ofThread{
 
 public:
@@ -28,7 +28,7 @@ public:
 
 
 	// YOUR CUSTOM PARSING HERE /////////////////////////////////////////
-	virtual void parseJsonSubset() = 0;
+	virtual void parseJsonSubsetThread() = 0;
 
 	// HOW MANY ELEMENTS TO PARSE IN JSON ///////////////////////////////
 	virtual int getNumEntriesInJson(ofxJSONElement* json_) = 0;
@@ -39,12 +39,12 @@ public:
 	float getPercentDone();
 
 	//only call when Thread is finished, or you will get crashes
-	vector<ofxParseableObject*> getParsedObjects(){return parsedObjects;}
+	vector<O*> getParsedObjects(){return parsedObjects;}
 
 protected:
 
 	// SUBCLASS SHOULD STORE LIST OF PARSED OBJECTS HERE ///////////////
-	vector<ofxParseableObject*> parsedObjects;
+	vector<O*> parsedObjects;
 
 	// SUBCLASS SHOULD UPDATE THIS AS IT PARSES ///////////////////////
 	int numParsedObjects;

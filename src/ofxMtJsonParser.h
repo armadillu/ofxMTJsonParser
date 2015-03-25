@@ -13,11 +13,14 @@
 #include "ofxSimpleHttp.h"
 #include "ofxJSON.h"
 #include "ofxMtJsonParseConfig.h"
+
 #include "ofxMtJsonParserThread.h"
+#include "ofxMtJsonParserThread.cpp"//NOTE THE INCLUSION OF .CPP!! Bc of the templated code
+//http://stackoverflow.com/questions/495021/why-can-templates-only-be-implemented-in-the-header-file
 
-class ofxParseableObject;
 
-template <class T>
+//Parser, Object
+template <class P,class O>
 class ofxMtJsonParser: public ofThread{
 
 public:
@@ -37,7 +40,7 @@ public:
 	ofEvent<bool> eventDownloadFailed;
 	ofEvent<bool> eventDontentReady;
 
-	vector<ofxParseableObject*> getParsedObjects();
+	vector<O*> getParsedObjects();
 
 
 protected:
@@ -64,7 +67,7 @@ protected:
 	ofMutex mutex;
 
 	int numThreads;
-	vector<ofxMtJsonParserThread*> threads;
+	vector<ofxMtJsonParserThread<O>*> threads;
 	vector<ofxMtJsonParserConfig> threadConfigs;
 
 	void setState(State s);
@@ -77,7 +80,7 @@ protected:
 
 	void threadedFunction();
 
-	vector<ofxParseableObject*> parsedObjects;
+	vector<O*> parsedObjects;
 };
 
 #endif /* defined(__BaseApp__ofxMtJsonParser__) */

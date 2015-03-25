@@ -9,13 +9,15 @@
 
 #include "ofxMtJsonParserThread.h"
 
-ofxMtJsonParserThread::ofxMtJsonParserThread(){
+template <class O>
+ofxMtJsonParserThread<O>::ofxMtJsonParserThread(){
 	numParsedObjects = 0;
 	json = NULL;
 	printMutex = NULL;
 };
 
-void ofxMtJsonParserThread::startParsing(ofxJSONElement* json_,
+template <class O>
+void ofxMtJsonParserThread<O>::startParsing(ofxJSONElement* json_,
 										 ofxMtJsonParserConfig config_,
 										 ofMutex * printMutex_){
 	json = json_;
@@ -24,8 +26,8 @@ void ofxMtJsonParserThread::startParsing(ofxJSONElement* json_,
 	startThread();
 }
 
-
-void ofxMtJsonParserThread::threadedFunction(){
+template <class O>
+void ofxMtJsonParserThread<O>::threadedFunction(){
 
 	try {
 		getPocoThread().setName("ofxMtJsonParserThread");
@@ -34,38 +36,38 @@ void ofxMtJsonParserThread::threadedFunction(){
 		<< " " << exc.displayText();
 	}
 	numObjectsToParse = getNumEntriesInJson(json);
-	parseJsonSubset();
+	parseJsonSubsetThread();
 	ofLogNotice("ofxMtJsonParserThread")<< "Parsing Thread " << config.threadID << " finished";
 	stopThread();
 }
 
-
-void ofxMtJsonParserThread::parseJsonSubset(){
+template <class O>
+void ofxMtJsonParserThread<O>::parseJsonSubsetThread(){
 
 	ofLogError("ofxMtJsonParserThread") << "your subclass must implement this!";
 	//in your subclass, use json*, printMutex* and config to parse
 	//the JSON elements from config.startIndex to config.endIndex
 }
 
-
-int ofxMtJsonParserThread::getNumParsedObjects(){
+template <class O>
+int ofxMtJsonParserThread<O>::getNumParsedObjects(){
 	return numParsedObjects;
 
 }
 
-
-int ofxMtJsonParserThread::getNumObjectsToParse(){
+template <class O>
+int ofxMtJsonParserThread<O>::getNumObjectsToParse(){
 	return config.endIndex - config.startIndex;
 }
 
-
-int ofxMtJsonParserThread::getNumObjectsLeftToParse(){
+template <class O>
+int ofxMtJsonParserThread<O>::getNumObjectsLeftToParse(){
 	ofLogNotice("ofxMtJsonParserThread") << "getNumObjectsLeftToParse " << numParsedObjects<< " " <<numObjectsToParse ;
 	return numParsedObjects - numObjectsToParse;
 }
 
-
-float ofxMtJsonParserThread::getPercentDone(){
+template <class O>
+float ofxMtJsonParserThread<O>::getPercentDone(){
 	return float(numParsedObjects) / float(numObjectsToParse);
 }
 

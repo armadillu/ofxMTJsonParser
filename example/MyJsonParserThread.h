@@ -14,11 +14,11 @@
 #include "ofxJSON.h"
 #include "MyParseableObject.h"
 
-class MyJsonParserThread : public ofxMtJsonParserThread{
+class MyJsonParserThread : public ofxMtJsonParserThread<MyParseableObject>{
 
 public:
 
-	void parseJsonSubset(){
+	void parseJsonSubsetThread(){
 
 		ofxJSONElement & jsonRef = *json; //pointers mess up the json syntax somehow
 
@@ -27,9 +27,9 @@ public:
 		int start = config.startIndex;
 		int end = config.endIndex;
 
-		//only parse our subset of objects
+		//only parse our subset of the JSON objects
+
 		for(int i = start; i < end; i++){
-			//ofLog() << "parse " << i;
 			string key = allKeys[i];
 			Json::Value &thisObject = jsonRef["data"][key];
 

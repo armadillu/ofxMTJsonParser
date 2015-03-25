@@ -9,9 +9,7 @@
 #ifndef BaseApp_MyParseableObject_h
 #define BaseApp_MyParseableObject_h
 
-#include "ofxParseableObject.h"
-
-class MyParseableObject : public ofxParseableObject{
+class MyParseableObject {
 
 	friend class MyJsonParserThread;
 	
