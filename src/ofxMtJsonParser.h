@@ -35,13 +35,19 @@ public:
 	void checkLocalJsonAndSplitWorkloads();
 
 	void update();
-	void isBusy();
+	bool isBusy();
 
+	string getDrawableState();
+
+	ofEvent<bool> eventJsonParseFailed;
 	ofEvent<bool> eventDownloadFailed;
 	ofEvent<bool> eventDontentReady;
 
-	vector<O*> getParsedObjects();
+	vector<float> getPerThreadProgress(); //returns a vector of size NumThreads with a float with [0..1]
 
+	vector<O*> getParsedObjects(); //use only after you got the "eventDontentReady" callback
+
+	ofxSimpleHttp & getHttp(){return http;} //in case you want to config it
 
 protected:
 

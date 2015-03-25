@@ -12,6 +12,55 @@ template <class P,class O>
 ofxMtJsonParser<P,O>::ofxMtJsonParser(){
 	state = IDLE;
 	ofAddListener(http.httpResponse, this, &ofxMtJsonParser::onJsonDownload);
+	http.setNeedsChecksumMatchToSkipDownload(true);
+}
+
+template <class P,class O>
+bool ofxMtJsonParser<P,O>::isBusy(){
+	return state != IDLE && state != DOWNLOAD_FAILED && state != FINISHED;
+}
+
+
+template <class P,class O>
+string ofxMtJsonParser<P,O>::getDrawableState(){
+
+	string msg = "State: ";
+
+	switch (state) {
+		case IDLE:
+			msg += "IDLE";
+			break;
+		case DOWNLOADING_JSON:
+			msg += "DOWNLOADING_JSON";
+			msg += "\n\n" + http.drawableString();
+			break;
+		case DOWNLOAD_FAILED:
+			msg += "DOWNLOAD_FAILED";
+			break;
+		case CHECKING_JSON:{
+			msg += "CHECKING_JSON";
+			}break;
+		case JSON_PARSE_FAILED:
+			msg += "JSON_PARSE_FAILED";
+			break;
+		case PARSING_JSON_IN_SUBTHREADS:{
+			msg += "PARSING_JSON_IN_SUBTHREADS";
+			msg += "\n\n";
+			vector<float> progress = getPerThreadProgress();
+			for(int i = 0; i < progress.size(); i++){
+				msg += "  Thread " + ofToString(i) + ": " + ofToString(100 * progress[i], 1) +
+				"% parsed. (" + ofToString((int)threads[i]->getNumParsedObjects()) + "/" +
+				ofToString((int)threads[i]->getNumObjectsToParse()) + ")\n";
+			}
+			}break;
+		case MERGE_THREAD_RESULTS:
+			msg += "MERGE_THREAD_RESULTS";
+			break;
+		case FINISHED:
+			msg += "FINISHED";
+			break;
+	}
+	return msg;
 }
 
 
@@ -39,6 +88,7 @@ void ofxMtJsonParser<P,O>::onJsonDownload(ofxSimpleHttpResponse & arg){
 		setState(DOWNLOAD_FAILED);
 	}
 }
+
 
 template <class P,class O>
 vector<O*> ofxMtJsonParser<P,O>::getParsedObjects(){
@@ -84,6 +134,7 @@ void ofxMtJsonParser<P,O>::checkLocalJsonAndSplitWorkloads(){
 			tConfig.threadID = i;
 			tConfig.startIndex = start;
 			tConfig.endIndex = end;
+			//printf("%d > %d - %d\n", i, start, end);
 
 			threadConfigs[i] = tConfig;
 		}
@@ -137,9 +188,12 @@ void ofxMtJsonParser<P,O>::setState(State s){
 			startThread();
 			break;
 
-		case JSON_PARSE_FAILED:
+		case JSON_PARSE_FAILED:{
 			stopThread();
+			bool ok = false;
+			ofNotifyEvent(eventJsonParseFailed, ok, this);
 			ofLogError("ofxMtJsonParser")<< "JSON_PARSE_FAILED! " << jsonDownloadDir;
+			}
 			break;
 
 		case PARSING_JSON_IN_SUBTHREADS:
@@ -176,6 +230,10 @@ void ofxMtJsonParser<P,O>::update(){
 
 		case MERGE_THREAD_RESULTS:
 			if(!isThreadRunning()){
+				for(int i = 0; i < threads.size(); i++){
+					delete threads[i];
+				}
+				threads.clear();
 				setState(FINISHED);
 			}
 			break;
@@ -192,12 +250,23 @@ void ofxMtJsonParser<P,O>::updateParsing(){
 		numJsonObjectsRemaining += threads[i]->getNumObjectsLeftToParse();
 		if(threads[i]->isThreadRunning()) numRunning++;
 	}
+	//TODO this can easily stay looping forever on a json parse exception
 	if(numRunning == 0 && numJsonObjectsRemaining == 0){ //json parse finished, all theads done!
 		setState(MERGE_THREAD_RESULTS);
 	}
-	//TODO this can easily stay looping forever on a json parse exception
+}
 
-	ofLog() << "updateParsing numrunning:" << numRunning << "  numJsonObjectsRemaining: " << numJsonObjectsRemaining;
+
+template <class P,class O>
+vector<float> ofxMtJsonParser<P,O>::getPerThreadProgress(){
+	vector<float> p;
+
+	if(state == PARSING_JSON_IN_SUBTHREADS || state == MERGE_THREAD_RESULTS || state == FINISHED ){
+		for(int i = 0; i < threads.size(); i++){
+			p.push_back(threads[i]->getPercentDone());
+		}
+	}
+	return p;
 }
 
 

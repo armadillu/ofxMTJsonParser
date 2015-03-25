@@ -26,6 +26,7 @@ public:
 	// APP CALLBACKS ////////////////////////////////////////
 
 	void jsonDownloadFailed(bool & arg);
+	void jsonParseFailed(bool & arg);
 	void jsonContentReady(bool & arg);
 
 	// APP SETUP ////////////////////////////////////////////

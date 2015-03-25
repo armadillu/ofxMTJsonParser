@@ -63,7 +63,7 @@ int ofxMtJsonParserThread<O>::getNumParsedObjects(){
 
 template <class O>
 int ofxMtJsonParserThread<O>::getNumObjectsToParse(){
-	return config.endIndex - config.startIndex;
+	return config.endIndex - config.startIndex + 1;
 }
 
 template <class O>

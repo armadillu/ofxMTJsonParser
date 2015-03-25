@@ -38,7 +38,7 @@ public:
 			try{
 				if (myArgs->verbose){
 					printMutex->lock();
-					ofLogNotice("MyJsonParserThread") << "Thread " << config.threadID <<" parsing OBJ "<< i;
+					ofLogNotice("MyJsonParserThread") << "Thread " << config.threadID <<" parsing OBJ #" << i;
 					printMutex->unlock();
 				}
 
@@ -54,11 +54,16 @@ public:
 
 				////////////////////////////////////////////////////////////////////
 				// THIS IS KEY! store the new parsed object in the superclass array
-				// and update progress!/////////////////////////////////////////////
+				// and update numParsedObjects! ////////////////////////////////////
+
 				parsedObjects.push_back(o);
 				numParsedObjects = i - start;
+
 				////////////////////////////////////////////////////////////////////
 				////////////////////////////////////////////////////////////////////
+
+
+				ofSleepMillis(50);
 
 			} catch (Exception exc) {
 				printMutex->lock();
@@ -74,7 +79,9 @@ public:
 
 		if(jsonRef.isObject()){
 			if(jsonRef["data"].isObject()){
-				return jsonRef["data"].size();
+				int numObjects = jsonRef["data"].size();
+				//printf("numObjects: %d\n", numObjects);
+				return numObjects;
 			}
 		}
 		ofLogError("MyJsonParserThread") << "JSON has unexpected format";
