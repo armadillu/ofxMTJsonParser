@@ -14,6 +14,11 @@
 #include "ofxMtJsonParserArgs.h"
 #include "ofxMtJsonParserUtils.h"
 
+struct ofxMtJsonParserConfig{
+	int threadID;
+	int startIndex;
+	int endIndex;
+};
 
 template <class O>
 class ofxMtJsonParserThread: public ofThread{
@@ -23,7 +28,8 @@ public:
 	ofxMtJsonParserThread();
 
 	void startParsing(ofxJSONElement* json_,
-					  ofxMtJsonParserArgs config,
+					  ofxMtJsonParserConfig config,
+					  ofxMtJsonParserArgs *args,
 					  ofMutex * printMutex_);
 
 
@@ -53,7 +59,9 @@ protected:
 	// TO BE USED BY SUBCLASS ////////////////////////////////////////
 	ofxJSONElement* json;
 	ofMutex * printMutex;
-	ofxMtJsonParserArgs config;
+
+	ofxMtJsonParserArgs * args;
+	ofxMtJsonParserConfig config;
 
 private:
 

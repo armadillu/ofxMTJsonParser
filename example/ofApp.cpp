@@ -8,12 +8,14 @@ void ofApp::setup(){
 	ofAddListener(jsonParser.eventDownloadFailed, this, &ofApp::jsonDownloadFailed);
 	ofAddListener(jsonParser.eventDontentReady, this, &ofApp::jsonContentReady);
 
-	myConfig.verbose = true;
+	//send this custom object to the threads
+	//to tweak their behavior
+	myArgs.verbose = false;
 
 	jsonParser.downloadAndParse("http://129.22.220.12/api/data/", //json url
 								"json", //directory where to save
 								5, //num threads
-								&myConfig //my config to pass to the threads
+								&myArgs //my config to pass to the threads
 								);
 }
 

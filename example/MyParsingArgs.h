@@ -1,17 +1,17 @@
 //
-//  MyParsingConfig.h
+//  MyParsingArgs.h
 //  BaseApp
 //
 //  Created by Oriol Ferrer Mesià on 25/03/15.
 //
 //
 
-#ifndef BaseApp_MyParsingConfig_h
-#define BaseApp_MyParsingConfig_h
+#ifndef BaseApp_MyParsingArgs_h
+#define BaseApp_MyParsingArgs_h
 
 #include "ofxMtJsonParserArgs.h"
 
-class MyParsingConfig: public ofxMtJsonParserArgs{
+class MyParsingArgs: public ofxMtJsonParserArgs{
 
 public:
 	

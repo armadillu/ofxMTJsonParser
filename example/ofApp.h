@@ -9,7 +9,7 @@
 
 #include "MyJsonParserThread.h"
 #include "MyParseableObject.h"
-#include "MyParsingConfig.h"
+#include "MyParsingArgs.h"
 
 class ofApp : public ofBaseApp{
 
@@ -34,5 +34,5 @@ public:
 	ofxMtJsonParser<MyJsonParserThread, MyParseableObject> jsonParser;
 	vector<MyParseableObject*> parsedObjects;
 
-	MyParsingConfig myConfig;
+	MyParsingArgs myArgs;
 };

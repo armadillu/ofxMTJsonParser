@@ -19,9 +19,9 @@ template <class P,class O>
 void ofxMtJsonParser<P,O>::downloadAndParse(string jsonURL_,
 										  string jsonDownloadDir_,
 										  int numThreads_,
-										  ofxMtJsonParserArgs* config_){
+										  ofxMtJsonParserArgs* args_){
 	numThreads = numThreads_;
-	config = config_;
+	args = args_;
 	jsonDownloadDir = jsonDownloadDir_;
 	jsonURL = jsonURL_;
 	setState(DOWNLOADING_JSON);
@@ -66,6 +66,8 @@ void ofxMtJsonParser<P,O>::checkLocalJsonAndSplitWorkloads(){
 
 		float numObjectsPerThread = numEntries / float(numThreads);
 
+		threadConfigs.resize(numThreads);
+
 		for(int i = 0; i < numThreads; i++){
 			ofxMtJsonParserThread<O> * pjt = new P();
 			threads.push_back(pjt);
@@ -78,12 +80,12 @@ void ofxMtJsonParser<P,O>::checkLocalJsonAndSplitWorkloads(){
 			}else{ //special case for last core, int division might not be even
 				end = numEntries - 1 ;
 			}
-			ofxMtJsonParserArgs tConfig = *config;
+			ofxMtJsonParserConfig tConfig;
 			tConfig.threadID = i;
 			tConfig.startIndex = start;
 			tConfig.endIndex = end;
 
-			threadConfigs.push_back(tConfig);
+			threadConfigs[i] = tConfig;
 		}
 		setState(PARSING_JSON_IN_SUBTHREADS);
 	}else{
@@ -96,8 +98,7 @@ template <class P,class O>
 void ofxMtJsonParser<P,O>::startParsingInSubThreads(){
 	for(int i = 0; i < threads.size(); i++){
 		ofxMtJsonParserThread<O>* pjt = threads[i];
-		ofxMtJsonParserArgs cfg = threadConfigs[i];
-		pjt->startParsing(json, cfg, &mutex);
+		pjt->startParsing(json, threadConfigs[i], args, &mutex);
 	}
 }
 
@@ -188,16 +189,13 @@ void ofxMtJsonParser<P,O>::updateParsing(){
 	int numRunning = 0;
 	int numJsonObjectsRemaining = 0;
 	for(int i = 0; i < threads.size(); i++){
-		int left = threads[i]->getNumObjectsLeftToParse();
-		ofLog() << "thread " << i << " left to parse: " << left;
-		numJsonObjectsRemaining += left;
+		numJsonObjectsRemaining += threads[i]->getNumObjectsLeftToParse();
 		if(threads[i]->isThreadRunning()) numRunning++;
 	}
 	if(numRunning == 0 && numJsonObjectsRemaining == 0){ //json parse finished, all theads done!
-		//ofFile::moveFromTo(JSON_TEMPORARY_COPY, JSON_LOCAL_COPY, true, true);
-		//mergeAndAnalyzeJsonParsedEntries();
 		setState(MERGE_THREAD_RESULTS);
 	}
+	//TODO this can easily stay looping forever on a json parse exception
 
 	ofLog() << "updateParsing numrunning:" << numRunning << "  numJsonObjectsRemaining: " << numJsonObjectsRemaining;
 }

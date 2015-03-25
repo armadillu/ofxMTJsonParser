@@ -30,7 +30,7 @@ public:
 	void downloadAndParse(string jsonURL_,
 						  string jsonDownloadDir_,
 						  int numThreads,
-						  ofxMtJsonParserArgs* config);
+						  ofxMtJsonParserArgs* args);
 
 	void checkLocalJsonAndSplitWorkloads();
 
@@ -64,13 +64,13 @@ protected:
 	string jsonAbsolutePath;
 	ofxJSONElement * json;
 
-	ofxMtJsonParserArgs *config;
+	ofxMtJsonParserArgs *args;
 
 	ofMutex mutex;
 
 	int numThreads;
 	vector<ofxMtJsonParserThread<O>*> threads;
-	vector<ofxMtJsonParserArgs> threadConfigs;
+	vector<ofxMtJsonParserConfig> threadConfigs;
 
 	void setState(State s);
 

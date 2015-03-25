@@ -13,6 +13,7 @@
 #include "ofxMtJsonParser.h"
 #include "ofxJSON.h"
 #include "MyParseableObject.h"
+#include "MyParsingArgs.h"
 
 class MyJsonParserThread : public ofxMtJsonParserThread<MyParseableObject>{
 
@@ -28,10 +29,19 @@ public:
 		int start = config.startIndex;
 		int end = config.endIndex;
 
+		//force cast to real config we supplied in ofApp
+		MyParsingArgs * myArgs = (MyParsingArgs *)args;
+
 		//only parse our subset of the JSON objects: [start .. end]
 		for(int i = start; i <= end; i++){
 
 			try{
+				if (myArgs->verbose){
+					printMutex->lock();
+					ofLogNotice("MyJsonParserThread") << "Thread " << config.threadID <<" parsing OBJ "<< i;
+					printMutex->unlock();
+				}
+
 				string key = allKeys[i];
 				Json::Value &thisObject = jsonRef["data"][key];
 

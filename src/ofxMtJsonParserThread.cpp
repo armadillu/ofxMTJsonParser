@@ -14,14 +14,17 @@ ofxMtJsonParserThread<O>::ofxMtJsonParserThread(){
 	numParsedObjects = 0;
 	json = NULL;
 	printMutex = NULL;
+	args = NULL;
 };
 
 template <class O>
 void ofxMtJsonParserThread<O>::startParsing(ofxJSONElement* json_,
-										 ofxMtJsonParserArgs config_,
-										 ofMutex * printMutex_){
+											ofxMtJsonParserConfig config_,
+										 	ofxMtJsonParserArgs *args_,
+										 	ofMutex * printMutex_){
 	json = json_;
 	config = config_;
+	args = args_;
 	printMutex = printMutex_;
 	startThread();
 }
@@ -40,7 +43,6 @@ void ofxMtJsonParserThread<O>::threadedFunction(){
 	numObjectsToParse = config.endIndex - config.startIndex;
 	parseJsonSubsetThread();
 	printMutex->lock();
-	ofLogNotice("ofxMtJsonParserThread")<< "Parsing Thread " << config.threadID << " finished";
 	printMutex->unlock();
 	stopThread();
 }

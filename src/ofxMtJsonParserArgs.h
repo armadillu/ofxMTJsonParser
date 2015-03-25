@@ -15,17 +15,6 @@ class ofxMtJsonParserArgs{
 
 public:
 
-	ofxMtJsonParserArgs(){
-		threadID = -1;
-		startIndex = endIndex = 0;
-	}
-
-	int threadID;
-
-	//both included
-	int startIndex; //defines which indices to parse (per thread)
-	int endIndex;
-
 };
 
 #endif
