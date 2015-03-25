@@ -9,61 +9,63 @@
 #ifndef BaseApp_ofxMtJsonParserUtils_h
 #define BaseApp_ofxMtJsonParserUtils_h
 
-#define PRINT_STRING_VAR(var) ofLogNotice() << "  " << #var << ": " << var.substr(0, MIN(var.length(), 80) );
-#define PRINT_BOOL_VAR(var) ofLogNotice() << "  " << #var << ": " << string(var ? "TRUE" : "FALSE");
-#define PRINT_INT_VAR(var) ofLogNotice() << "  " << #var << ": " << var;
-#define NAME_OF_VAR(var) #var
-
 #include "ofxJson.h"
 
 class ofxMtJsonParserUtils{
 
+public:
+	
 	static inline string initFromJsonString(const ofxJSONElement& json, const string& key, bool verbose){
 		if(json[key].isString()) {
-			return json[key].asString();
-			if( key.size() == 0){
-				/*LOG_ERROR << "entry has empty '" << #key <<"' field";*/\
-			}
+			string ret = json[key].asString();
 			if(verbose){
-				PRINT_STRING_VAR(key);
+				ofLogNotice("ofxMtJsonParserUtils") << key << " = " << ret;
 			}
+			return ret;
 		}
 		ofLogError("ofxMtJsonParserUtils") << "Can't initFromJsonString '" << key << "'" ;
 		return "";
 	}
 
+	static inline int initFromJsonInt(const ofxJSONElement& json, const string& key, bool verbose){
+		if(!json[key].isNull()) {
+			int v = json[key].asInt();
+			if(verbose){
+				ofLogNotice("ofxMtJsonParserUtils") << key << " = " << v;
+			}
+			return v;
+		}
+		ofLogError("ofxMtJsonParserUtils") << "Can't initFromJsonInt '" << key << "'" ;
+		return 0;
+	}
+
+	static inline float initFromJsonFloat(const ofxJSONElement& json, const string& key, bool verbose){
+		if(!json[key].isNull()) {
+			float f = json[key].asFloat();
+			if(verbose){
+				ofLogNotice("ofxMtJsonParserUtils") << key << " = " << f;
+			}
+			return f;
+		}
+		ofLogError("ofxMtJsonParserUtils") << "Can't initFromJsonInt '" << key << "'" ;
+		return 0.0f;
+	}
+
+	static inline bool initFromJsonBool(const ofxJSONElement& json, const string& key, bool verbose){
+		if(!json[key].isNull()) {
+			bool b = json[key].asBool();
+			if(verbose){
+				ofLogNotice("ofxMtJsonParserUtils") << key << " = " << b;
+			}
+			return b;
+		}
+		ofLogError("ofxMtJsonParserUtils") << "Can't initFromJsonInt '" << key << "'" ;
+		return false;
+	}
+
 };
 
 
-#define initFromJsonString(key, verbose)\
-								if(!entry[#key].isNull()) {						\
-									key = entry[#key].asString();				\
-									if( key.size() == 0){						\
-										/*LOG_ERROR << "entry has empty '" << #key <<"' field";*/\
-									}											\
-									if(verbose){PRINT_STRING_VAR(key);}			\
-								}else{											\
-									/*LOG_WARNING << "Key is Null: " << #key;*/	\
-								}
-
-#define initFromJsonMongoDate(key) if(!entry[#key].isNull()) {						\
-										key = entry[#key]["$date"].asUInt64();		\
-									}else{											\
-										/*LOG_WARNING << "Key is Null: " << #key;*/		\
-									}
-
-
-#define initFromJsonInt(key) if(!entry[#key].isNull()) {						\
-									key = entry[#key].asInt();					\
-								}else{											\
-									/*LOG_ERROR << "Key is Null: " << #key;*/	\
-								}
-
-#define initFromJsonFloat(key) if(!entry[#key].isNull()) {						\
-									key = entry[#key].asFloat();				\
-								}else{											\
-									/*LOG_ERROR << "Key is Null: " << #key;*/	\
-								}
 
 #define initFromJsonBool(key) if(!entry[#key].isNull()) {						\
 									key = entry[#key].asBool();					\

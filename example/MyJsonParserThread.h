@@ -49,8 +49,10 @@ public:
 				MyParseableObject * o = new MyParseableObject();
 
 				//parse stuff into it!
-				o->setTitle(thisObject["title"].asString());
-				o->setDescription(thisObject["description"].asString());
+				printMutex->lock();
+				o->setTitle( ofxMtJsonParserUtils::initFromJsonString(thisObject, "title", true) );
+				o->setDescription( ofxMtJsonParserUtils::initFromJsonString(thisObject, "description", true) );
+				printMutex->unlock();
 
 				////////////////////////////////////////////////////////////////////
 				// THIS IS KEY! store the new parsed object in the superclass array
@@ -61,7 +63,6 @@ public:
 
 				////////////////////////////////////////////////////////////////////
 				////////////////////////////////////////////////////////////////////
-
 
 				ofSleepMillis(50);
 

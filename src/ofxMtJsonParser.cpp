@@ -69,7 +69,7 @@ void ofxMtJsonParser<P,O>::downloadAndParse(string jsonURL_,
 										  string jsonDownloadDir_,
 										  int numThreads_,
 										  ofxMtJsonParserArgs* args_){
-	numThreads = numThreads_;
+	numThreads = ofClamp(numThreads_, 1, INT_MAX);
 	args = args_;
 	jsonDownloadDir = jsonDownloadDir_;
 	jsonURL = jsonURL_;
