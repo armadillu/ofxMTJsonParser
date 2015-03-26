@@ -26,6 +26,8 @@ private:
 	string title;
 	string description;
 
+	//bla bla
+
 };
 
 #endif

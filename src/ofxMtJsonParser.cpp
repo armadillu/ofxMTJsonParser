@@ -101,7 +101,7 @@ vector<O*> ofxMtJsonParser<P,O>::getParsedObjects(){
 
 
 template <class P,class O>
-void ofxMtJsonParser<P,O>::checkLocalJsonAndSplitWorkloads(){
+void ofxMtJsonParser<P,O>::checkLocalJsonAndSplitWorkload(){
 
 	bool ok = true;
 	json = new ofxJSONElement();
@@ -206,6 +206,8 @@ void ofxMtJsonParser<P,O>::setState(State s){
 
 		case FINISHED:{
 			bool ok = true;
+			delete json;
+			json = NULL;
 			ofNotifyEvent(eventDontentReady, ok, this);
 			}break;
 	}
@@ -283,7 +285,7 @@ void ofxMtJsonParser<P,O>::threadedFunction(){
 	while(isThreadRunning()){
 		switch (state) {
 			case CHECKING_JSON:
-				checkLocalJsonAndSplitWorkloads();
+				checkLocalJsonAndSplitWorkload();
 				stopThread();
 				break;
 

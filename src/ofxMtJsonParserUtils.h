@@ -10,68 +10,79 @@
 #define BaseApp_ofxMtJsonParserUtils_h
 
 #include "ofxJson.h"
+#include "ofTypes.h"
+
+#define LOCK_PRINT_MUTEX 		if(mutex) mutex->lock();
+#define UNLOCK_PRINT_MUTEX		if(mutex) mutex->unlock();
+
 
 class ofxMtJsonParserUtils{
 
 public:
-	
-	static inline string initFromJsonString(const ofxJSONElement& json, const string& key, bool verbose){
+
+	static inline string initFromJsonString(const ofxJSONElement& json, const string& key, bool verbose, ofMutex * mutex = NULL){
 		if(json[key].isString()) {
 			string ret = json[key].asString();
 			if(verbose){
+				LOCK_PRINT_MUTEX
 				ofLogNotice("ofxMtJsonParserUtils") << key << " = " << ret;
+				UNLOCK_PRINT_MUTEX
 			}
 			return ret;
 		}
+		LOCK_PRINT_MUTEX
 		ofLogError("ofxMtJsonParserUtils") << "Can't initFromJsonString '" << key << "'" ;
+		UNLOCK_PRINT_MUTEX
 		return "";
 	}
 
-	static inline int initFromJsonInt(const ofxJSONElement& json, const string& key, bool verbose){
+	static inline int initFromJsonInt(const ofxJSONElement& json, const string& key, bool verbose, ofMutex * mutex = NULL){
 		if(!json[key].isNull()) {
 			int v = json[key].asInt();
 			if(verbose){
+				LOCK_PRINT_MUTEX
 				ofLogNotice("ofxMtJsonParserUtils") << key << " = " << v;
+				UNLOCK_PRINT_MUTEX
 			}
 			return v;
 		}
+		LOCK_PRINT_MUTEX
 		ofLogError("ofxMtJsonParserUtils") << "Can't initFromJsonInt '" << key << "'" ;
+		UNLOCK_PRINT_MUTEX
 		return 0;
 	}
 
-	static inline float initFromJsonFloat(const ofxJSONElement& json, const string& key, bool verbose){
+	static inline float initFromJsonFloat(const ofxJSONElement& json, const string& key, bool verbose, ofMutex * mutex = NULL){
 		if(!json[key].isNull()) {
 			float f = json[key].asFloat();
 			if(verbose){
+				LOCK_PRINT_MUTEX
 				ofLogNotice("ofxMtJsonParserUtils") << key << " = " << f;
+				UNLOCK_PRINT_MUTEX
 			}
 			return f;
 		}
+		LOCK_PRINT_MUTEX
 		ofLogError("ofxMtJsonParserUtils") << "Can't initFromJsonInt '" << key << "'" ;
+		UNLOCK_PRINT_MUTEX
 		return 0.0f;
 	}
 
-	static inline bool initFromJsonBool(const ofxJSONElement& json, const string& key, bool verbose){
+	static inline bool initFromJsonBool(const ofxJSONElement& json, const string& key, bool verbose, ofMutex * mutex = NULL){
 		if(!json[key].isNull()) {
 			bool b = json[key].asBool();
 			if(verbose){
+				LOCK_PRINT_MUTEX
 				ofLogNotice("ofxMtJsonParserUtils") << key << " = " << b;
+				UNLOCK_PRINT_MUTEX
 			}
 			return b;
 		}
+		LOCK_PRINT_MUTEX
 		ofLogError("ofxMtJsonParserUtils") << "Can't initFromJsonInt '" << key << "'" ;
+		UNLOCK_PRINT_MUTEX
 		return false;
 	}
-
 };
-
-
-
-#define initFromJsonBool(key) if(!entry[#key].isNull()) {						\
-									key = entry[#key].asBool();					\
-								}else{											\
-									/*LOG_WARNING << "Key is Null: " << #key;*/	\
-								}
-
 
 #endif

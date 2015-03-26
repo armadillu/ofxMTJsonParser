@@ -32,18 +32,22 @@ public:
 						  int numThreads,
 						  ofxMtJsonParserArgs* args);
 
-	void checkLocalJsonAndSplitWorkloads();
-
 	void update();
-	bool isBusy();
 
+	// STATUS //
+	bool isBusy();
+	bool isDownloadingJson(){ return state == DOWNLOADING_JSON; }
+	bool isCheckingJson(){ return state == CHECKING_JSON; }
+	bool isParsingJson(){ return state == PARSING_JSON_IN_SUBTHREADS; }
+	vector<float> getPerThreadProgress(); //returns a vector of size NumThreads with a float with [0..1]
 	string getDrawableState();
+
+	// EVENTS //
 
 	ofEvent<bool> eventJsonParseFailed;
 	ofEvent<bool> eventDownloadFailed;
 	ofEvent<bool> eventDontentReady;
 
-	vector<float> getPerThreadProgress(); //returns a vector of size NumThreads with a float with [0..1]
 
 	vector<O*> getParsedObjects(); //use only after you got the "eventDontentReady" callback
 
@@ -82,6 +86,7 @@ protected:
 
 	void updateParsing();
 	void startParsingInSubThreads();
+	void checkLocalJsonAndSplitWorkload();
 	void mergeThreadResults();
 
 	void onJsonDownload(ofxSimpleHttpResponse & arg);

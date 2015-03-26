@@ -21,9 +21,8 @@ public:
 
 	void parseJsonSubsetThread(){
 
-		ofxJSONElement & jsonRef = *json; //pointers mess up the json syntax somehow
+		const ofxJSONElement & jsonRef = *json; //pointers mess up the json syntax somehow
 
-		vector<string>allKeys = jsonRef["data"].getMemberNames();
 
 		//both included
 		int start = config.startIndex;
@@ -42,17 +41,13 @@ public:
 					printMutex->unlock();
 				}
 
-				string key = allKeys[i];
-				Json::Value &thisObject = jsonRef["data"][key];
 
 				//make new object
 				MyParseableObject * o = new MyParseableObject();
 
 				//parse stuff into it!
-				printMutex->lock();
-				o->setTitle( ofxMtJsonParserUtils::initFromJsonString(thisObject, "title", true) );
-				o->setDescription( ofxMtJsonParserUtils::initFromJsonString(thisObject, "description", true) );
-				printMutex->unlock();
+				o->setTitle( ofxMtJsonParserUtils::initFromJsonString(jsonRef[i], "title_raw", true, printMutex) );
+				o->setDescription( ofxMtJsonParserUtils::initFromJsonString(jsonRef[i], "dimensions", true, printMutex) );
 
 				////////////////////////////////////////////////////////////////////
 				// THIS IS KEY! store the new parsed object in the superclass array
@@ -64,7 +59,6 @@ public:
 				////////////////////////////////////////////////////////////////////
 				////////////////////////////////////////////////////////////////////
 
-				ofSleepMillis(50);
 
 			} catch (Exception exc) {
 				printMutex->lock();
@@ -74,17 +68,27 @@ public:
 		}
 	}
 
+
 	int getNumEntriesInJson(ofxJSONElement* json_){
 
-		ofxJSONElement & jsonRef = *json_; //pointers mess up the json syntax somehow
+		const ofxJSONElement & jsonRef = *json_; //pointers mess up the json syntax somehow
 
-		if(jsonRef.isObject()){
-			if(jsonRef["data"].isObject()){
-				int numObjects = jsonRef["data"].size();
-				//printf("numObjects: %d\n", numObjects);
-				return numObjects;
-			}
+		//CH JSON
+		if(jsonRef.isArray()){
+			return jsonRef.size();
 		}
+
+
+		//CWRU JSON
+//		if(jsonRef.isObject()){
+//			if(jsonRef["data"].isObject()){
+//				int numObjects = jsonRef["data"].size();
+//				//printf("numObjects: %d\n", numObjects);
+//				return numObjects;
+//			}
+//		}
+
+
 		ofLogError("MyJsonParserThread") << "JSON has unexpected format";
 		return 0;
 	}
