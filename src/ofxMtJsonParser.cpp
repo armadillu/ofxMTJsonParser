@@ -84,9 +84,11 @@ void ofxMtJsonParser<P,O>::onJsonDownload(ofxSimpleHttpResponse & arg){
 
 	if(arg.ok){
 		jsonAbsolutePath = arg.absolutePath;
+		ofNotifyEvent(eventJsonDownloaded, arg, this);
 		setState(CHECKING_JSON);
 	}else{
 		ofLogError("ofxMtJsonParser") << "download failed! " << arg.reasonForStatus;
+		ofNotifyEvent(eventJsonDownloadFailed, arg, this);
 		setState(DOWNLOAD_FAILED);
 	}
 }
@@ -110,6 +112,8 @@ void ofxMtJsonParser<P,O>::checkLocalJsonAndSplitWorkload(){
 	bool parsingSuccessful;
 	parsingSuccessful = json->open(jsonAbsolutePath);
 	if(parsingSuccessful){
+
+		ofNotifyEvent(eventJsonInitialCheckOK, parsingSuccessful, this);
 
 		//use a temp JsonParser subclass instance to count how many objects are there to parse
 		ofxMtJsonParserThread<O> * temp = new P();
@@ -181,8 +185,6 @@ void ofxMtJsonParser<P,O>::setState(State s){
 			break;
 
 		case DOWNLOAD_FAILED:{
-			bool ok = false;
-			ofNotifyEvent(eventDownloadFailed, ok, this);
 			ofLogError("ofxMtJsonParser")<< "DOWNLOAD_FAILED! " << jsonURL;
 			}break;
 
@@ -210,7 +212,7 @@ void ofxMtJsonParser<P,O>::setState(State s){
 			bool ok = true;
 			delete json;
 			json = NULL;
-			ofNotifyEvent(eventDontentReady, ok, this);
+			ofNotifyEvent(eventAllObjectsParsed, ok, this);
 			}break;
 	}
 }
