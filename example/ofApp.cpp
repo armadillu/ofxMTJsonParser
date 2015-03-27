@@ -5,26 +5,28 @@ void ofApp::setup(){
 
 	ofBackground(22);
 
-	//subscribe to events
+	//subscribe to parsing events - event list still wip
 	ofAddListener(jsonParser.eventDownloadFailed, this, &ofApp::jsonDownloadFailed);
 	ofAddListener(jsonParser.eventJsonParseFailed, this, &ofApp::jsonParseFailed);
 	ofAddListener(jsonParser.eventDontentReady, this, &ofApp::jsonContentReady);
 
-	//Send this custom object (MyParsingArgs) to your MyJsonParserThread Threads
-	//to be able to tweak their behavior if you need to
-	myArgs.verbose = true;
+	//Send custom parsing params (MyParsingConfig) to your MyJsonParserThread Threads
+	//to be able to tweak their parsing behavior if you need to
+	//(ie ignore objects with no images, etc)
+	myParseConfig.verbose = true;
+	myParseConfig.ignoreObjectsWithNoTitle = true;
 
 	string jsonURL_CH = "http://ch-localprojects.s3.amazonaws.com/json_data/api.objects.latest.json";
 	string jsonURL_CWRU = "http://129.22.220.12/api/data/";
 
-	//config the download if you need to (proxy, etc)
+	//config the http downloader if you need to (proxy, etc)
 	jsonParser.getHttp().setSpeedLimit(20000); // kb/sec
 
-	//start the process
-	jsonParser.downloadAndParse(jsonURL_CH, //json url
-								"json", //directory where to save
-								8, //num threads
-								&myArgs //my config to pass to the threads
+	//start the download and parse process
+	jsonParser.downloadAndParse(jsonURL_CH, 	//json url
+								"json", 		//directory where to save
+								8, 				//num threads
+								&myParseConfig 		//my config to pass to the threads
 								);
 }
 
@@ -42,13 +44,16 @@ void ofApp::jsonParseFailed(bool & arg){
 void ofApp::jsonContentReady(bool & arg){
 
 	ofLogNotice("ofApp") << "content ready!";
+
+	//get your parsed object *
 	parsedObjects = jsonParser.getParsedObjects();
 
 	//print all parsed objects
 	for(int i = 0; i < parsedObjects.size(); i++){
-		MyParseableObject * obj = (MyParseableObject *)parsedObjects[i];
-		obj->print();
+		parsedObjects[i]->print();
+		delete parsedObjects[i];
 	}
+	parsedObjects.clear();
 }
 
 

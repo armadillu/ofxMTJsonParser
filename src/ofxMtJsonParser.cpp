@@ -11,6 +11,8 @@
 template <class P,class O>
 ofxMtJsonParser<P,O>::ofxMtJsonParser(){
 	state = IDLE;
+	json = NULL;
+	numEntriesInJson = numThreads = 0;
 	ofAddListener(http.httpResponse, this, &ofxMtJsonParser::onJsonDownload);
 	http.setNeedsChecksumMatchToSkipDownload(true);
 }
@@ -68,7 +70,7 @@ template <class P,class O>
 void ofxMtJsonParser<P,O>::downloadAndParse(string jsonURL_,
 										  string jsonDownloadDir_,
 										  int numThreads_,
-										  ofxMtJsonParserArgs* args_){
+										  ofxMtJsonParserConfig* args_){
 	numThreads = ofClamp(numThreads_, 1, INT_MAX);
 	args = args_;
 	jsonDownloadDir = jsonDownloadDir_;
@@ -111,10 +113,10 @@ void ofxMtJsonParser<P,O>::checkLocalJsonAndSplitWorkload(){
 
 		//use a temp JsonParser subclass instance to count how many objects are there to parse
 		ofxMtJsonParserThread<O> * temp = new P();
-		int numEntries = temp->getNumEntriesInJson(json);
+		numEntriesInJson = temp->getNumEntriesInJson(json);
 		delete temp;
 
-		float numObjectsPerThread = numEntries / float(numThreads);
+		float numObjectsPerThread = numEntriesInJson / float(numThreads);
 
 		threadConfigs.resize(numThreads);
 
@@ -128,9 +130,9 @@ void ofxMtJsonParser<P,O>::checkLocalJsonAndSplitWorkload(){
 			if (i < numThreads -1){
 				end = floor((i+1) * numObjectsPerThread) - 1;
 			}else{ //special case for last core, int division might not be even
-				end = numEntries - 1 ;
+				end = numEntriesInJson - 1 ;
 			}
-			ofxMtJsonParserConfig tConfig;
+			ofxMtJsonParserThreadConfig tConfig;
 			tConfig.threadID = i;
 			tConfig.startIndex = start;
 			tConfig.endIndex = end;
@@ -236,6 +238,8 @@ void ofxMtJsonParser<P,O>::update(){
 					delete threads[i];
 				}
 				threads.clear();
+				threadConfigs.clear();
+				args = NULL;
 				setState(FINISHED);
 			}
 			break;
@@ -247,13 +251,10 @@ template <class P,class O>
 void ofxMtJsonParser<P,O>::updateParsing(){
 
 	int numRunning = 0;
-	int numJsonObjectsRemaining = 0;
 	for(int i = 0; i < threads.size(); i++){
-		numJsonObjectsRemaining += threads[i]->getNumObjectsLeftToParse();
 		if(threads[i]->isThreadRunning()) numRunning++;
 	}
-	//TODO this can easily stay looping forever on a json parse exception
-	if(numRunning == 0 && numJsonObjectsRemaining == 0){ //json parse finished, all theads done!
+	if(numRunning == 0){ //json parse finished, all theads done!
 		setState(MERGE_THREAD_RESULTS);
 	}
 }

@@ -12,7 +12,7 @@
 #include "ofMain.h"
 #include "ofxSimpleHttp.h"
 #include "ofxJSON.h"
-#include "ofxMtJsonParserArgs.h"
+#include "ofxMtJsonParserConfig.h"
 
 #include "ofxMtJsonParserThread.h"
 #include "ofxMtJsonParserThread.cpp"//NOTE THE INCLUSION OF .CPP!! Bc of the templated code
@@ -30,7 +30,7 @@ public:
 	void downloadAndParse(string jsonURL_,
 						  string jsonDownloadDir_,
 						  int numThreads,
-						  ofxMtJsonParserArgs* args);
+						  ofxMtJsonParserConfig* args);
 
 	void update();
 
@@ -41,6 +41,8 @@ public:
 	bool isParsingJson(){ return state == PARSING_JSON_IN_SUBTHREADS; }
 	vector<float> getPerThreadProgress(); //returns a vector of size NumThreads with a float with [0..1]
 	string getDrawableState();
+
+	int getNumEntriesInJson(){return numEntriesInJson;}
 
 	// EVENTS //
 
@@ -74,13 +76,15 @@ protected:
 	string jsonAbsolutePath;
 	ofxJSONElement * json;
 
-	ofxMtJsonParserArgs *args;
+	int numEntriesInJson;
+
+	ofxMtJsonParserConfig *args;
 
 	ofMutex mutex;
 
 	int numThreads;
 	vector<ofxMtJsonParserThread<O>*> threads;
-	vector<ofxMtJsonParserConfig> threadConfigs;
+	vector<ofxMtJsonParserThreadConfig> threadConfigs;
 
 	void setState(State s);
 

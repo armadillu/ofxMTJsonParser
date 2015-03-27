@@ -19,8 +19,8 @@ ofxMtJsonParserThread<O>::ofxMtJsonParserThread(){
 
 template <class O>
 void ofxMtJsonParserThread<O>::startParsing(ofxJSONElement* json_,
-											ofxMtJsonParserConfig config_,
-										 	ofxMtJsonParserArgs *args_,
+											ofxMtJsonParserThreadConfig config_,
+										 	ofxMtJsonParserConfig *args_,
 										 	ofMutex * printMutex_){
 	json = json_;
 	config = config_;

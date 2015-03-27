@@ -13,7 +13,7 @@
 #include "ofxMtJsonParser.h"
 #include "ofxJSON.h"
 #include "MyParseableObject.h"
-#include "MyParsingArgs.h"
+#include "MyParsingConfig.h"
 
 class MyJsonParserThread : public ofxMtJsonParserThread<MyParseableObject>{
 
@@ -23,48 +23,62 @@ public:
 
 		const ofxJSONElement & jsonRef = *json; //pointers mess up the json syntax somehow
 
-
 		//both included
 		int start = config.startIndex;
 		int end = config.endIndex;
 
-		//force cast to real config we supplied in ofApp
-		MyParsingArgs * myArgs = (MyParsingArgs *)args;
+		//force cast to your config subclass to get to your custom parsing params
+		MyParsingConfig * myArgs = (MyParsingConfig *)args;
 
 		//only parse our subset of the JSON objects: [start .. end]
 		for(int i = start; i <= end; i++){
 
-			try{
-				if (myArgs->verbose){
-					printMutex->lock();
-					ofLogNotice("MyJsonParserThread") << "Thread " << config.threadID <<" parsing OBJ #" << i;
-					printMutex->unlock();
-				}
-
-
-				//make new object
-				MyParseableObject * o = new MyParseableObject();
-
-				//parse stuff into it!
-				o->setTitle( ofxMtJsonParserUtils::initFromJsonString(jsonRef[i], "title_raw", true, printMutex) );
-				o->setDescription( ofxMtJsonParserUtils::initFromJsonString(jsonRef[i], "dimensions", true, printMutex) );
-
-				////////////////////////////////////////////////////////////////////
-				// THIS IS KEY! store the new parsed object in the superclass array
-				// and update numParsedObjects! ////////////////////////////////////
-
-				parsedObjects.push_back(o);
-				numParsedObjects = i - start;
-
-				////////////////////////////////////////////////////////////////////
-				////////////////////////////////////////////////////////////////////
-
-
-			} catch (Exception exc) {
+			//verbose according to your config
+			if (myArgs->verbose){
 				printMutex->lock();
-				ofLogError("MyJsonParserThread") << exc.what() << " " << exc.message() << " " << exc.displayText() << " WHILE PARSING " << i;
+				ofLogNotice("MyJsonParserThread") << "Thread " << config.threadID <<" parsing OBJ #" << i;
 				printMutex->unlock();
 			}
+
+			// Parse stuff from json object at index i //
+			string title;
+			string description;
+			try{
+
+				title = ofxMtJsonParserUtils::initFromJsonString(jsonRef[i], "title_raw", true, printMutex);
+				description = ofxMtJsonParserUtils::initFromJsonString(jsonRef[i], "dimensions", true, printMutex);
+
+			}catch(Exception exc){ //JSON parsing can throw exceptions
+				printMutex->lock();
+				ofLogError("MyJsonParserThread") << exc.what() << " " << exc.message() << " " << exc.displayText() << " WHILE PARSING OBJ " << i;
+				printMutex->unlock();
+			}
+
+			bool addThisObject = true;
+
+			//filter out objects that are incomplete (ie no title) according yo your rules (MyParsingConfig)
+			if(myArgs->ignoreObjectsWithNoTitle && title.size() == 0){
+				addThisObject = false;
+			}
+
+			if(addThisObject){
+				//make new object of your supplied class
+				MyParseableObject * o = new MyParseableObject();
+
+				o->setTitle( title );
+				o->setDescription( description );
+
+				////////////////////////////////////////////////////////////////////////////////////
+				// THIS IS KEY! store the new parsed object in the superclass array "parsedObjects"
+				parsedObjects.push_back(o);
+				///////////////////////////////////////////////////////////////////////////////////
+			}
+
+			////////////////////////////////////////////////////////////////////////////////////
+			// AND THIS TOO, WE NEED TO KEEP TRACK OF HOW MANY WE PARSED SO FAR
+			numParsedObjects = i - start;
+			////////////////////////////////////////////////////////////////////////////////////
+
 		}
 	}
 
@@ -77,16 +91,6 @@ public:
 		if(jsonRef.isArray()){
 			return jsonRef.size();
 		}
-
-
-		//CWRU JSON
-//		if(jsonRef.isObject()){
-//			if(jsonRef["data"].isObject()){
-//				int numObjects = jsonRef["data"].size();
-//				//printf("numObjects: %d\n", numObjects);
-//				return numObjects;
-//			}
-//		}
 
 
 		ofLogError("MyJsonParserThread") << "JSON has unexpected format";
