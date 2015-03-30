@@ -25,7 +25,10 @@ public:
 
 	// APP CALLBACKS ////////////////////////////////////////
 
-	void jsonDownloadFailed(bool & arg);
+
+	void jsonDownloaded(ofxSimpleHttpResponse & arg);
+	void jsonDownloadFailed(ofxSimpleHttpResponse & arg);
+	void jsonInitialCheckOK(bool &);
 	void jsonParseFailed(bool & arg);
 	void jsonContentReady(bool & arg);
 

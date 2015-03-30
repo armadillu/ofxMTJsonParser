@@ -6,9 +6,15 @@ void ofApp::setup(){
 	ofBackground(22);
 
 	//subscribe to parsing events - event list still wip
-	ofAddListener(jsonParser.eventDownloadFailed, this, &ofApp::jsonDownloadFailed);
+	ofAddListener(jsonParser.eventJsonDownloaded, this, &ofApp::jsonDownloaded);
+	ofAddListener(jsonParser.eventJsonDownloaded, this, &ofApp::jsonDownloadFailed);
+	ofAddListener(jsonParser.eventJsonInitialCheckOK, this, &ofApp::jsonInitialCheckOK);
+
 	ofAddListener(jsonParser.eventJsonParseFailed, this, &ofApp::jsonParseFailed);
-	ofAddListener(jsonParser.eventDontentReady, this, &ofApp::jsonContentReady);
+	ofAddListener(jsonParser.eventAllObjectsParsed, this, &ofApp::jsonContentReady);
+
+
+
 
 	//Send custom parsing params (MyParsingConfig) to your MyJsonParserThread Threads
 	//to be able to tweak their parsing behavior if you need to
@@ -31,10 +37,18 @@ void ofApp::setup(){
 }
 
 
-void ofApp::jsonDownloadFailed(bool & arg){
+void ofApp::jsonDownloaded(ofxSimpleHttpResponse & arg){
+	ofLogError("ofApp") << "download json ok!";
+}
+
+void ofApp::jsonDownloadFailed(ofxSimpleHttpResponse & arg){
 	ofLogError("ofApp") << "download failed!";
 }
 
+
+void ofApp::jsonInitialCheckOK(bool & arg){
+	ofLogError("ofApp") << "json file seems ok!";
+}
 
 void ofApp::jsonParseFailed(bool & arg){
 	ofLogError("ofApp") << "json Parse Failed!";
