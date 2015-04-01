@@ -134,7 +134,7 @@ void ofxMtJsonParser<P,O>::checkLocalJsonAndSplitWorkload(){
 			if (i < numThreads -1){
 				end = floor((i+1) * numObjectsPerThread) - 1;
 			}else{ //special case for last core, int division might not be even
-				end = numEntriesInJson - 1 ;
+				end = numEntriesInJson;
 			}
 			ofxMtJsonParserThreadConfig tConfig;
 			tConfig.threadID = i;
