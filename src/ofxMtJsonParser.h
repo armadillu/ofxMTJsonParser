@@ -40,6 +40,7 @@ public:
 	bool isCheckingJson(){ return state == CHECKING_JSON; }
 	bool isParsingJson(){ return state == PARSING_JSON_IN_SUBTHREADS; }
 	vector<float> getPerThreadProgress(); //returns a vector of size NumThreads with a float with [0..1]
+	float getTotalProgress();
 	string getDrawableState();
 
 	int getNumEntriesInJson(){return numEntriesInJson;}

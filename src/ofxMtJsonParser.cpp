@@ -274,6 +274,14 @@ vector<float> ofxMtJsonParser<P,O>::getPerThreadProgress(){
 	return p;
 }
 
+template <class P,class O>
+float ofxMtJsonParser<P,O>::getTotalProgress(){
+	vector<float> ps = getPerThreadProgress();
+	float threadsP = 0.0f;
+	for(int i = 0; i < ps.size(); i++){ threadsP += ps[i]; }
+	return threadsP / ps.size();
+}
+
 
 template <class P,class O>
 void ofxMtJsonParser<P,O>::threadedFunction(){
