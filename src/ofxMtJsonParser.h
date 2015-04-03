@@ -83,7 +83,7 @@ protected:
 
 	ofxMtJsonParserConfig *args;
 
-	ofMutex mutex;
+	ofMutex printMutex;
 
 	int numThreads;
 	vector<ofxMtJsonParserThread<O>*> threads;

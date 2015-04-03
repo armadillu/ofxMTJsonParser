@@ -155,7 +155,7 @@ template <class P,class O>
 void ofxMtJsonParser<P,O>::startParsingInSubThreads(){
 	for(int i = 0; i < threads.size(); i++){
 		ofxMtJsonParserThread<O>* pjt = threads[i];
-		pjt->startParsing(json, threadConfigs[i], args, &mutex);
+		pjt->startParsing(json, threadConfigs[i], args, &printMutex);
 	}
 }
 
@@ -205,7 +205,11 @@ void ofxMtJsonParser<P,O>::setState(State s){
 			break;
 
 		case MERGE_THREAD_RESULTS:
+			try{
 			startThread();
+			}catch(Exception e){
+				ofLogError("ofxMtJsonParser") << e.message();
+			}
 			break;
 
 		case FINISHED:{
