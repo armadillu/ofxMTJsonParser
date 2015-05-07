@@ -7,9 +7,8 @@ void ofApp::setup(){
 
 	//subscribe to parsing events - event list still wip
 	ofAddListener(jsonParser.eventJsonDownloaded, this, &ofApp::jsonDownloaded);
-	ofAddListener(jsonParser.eventJsonDownloaded, this, &ofApp::jsonDownloadFailed);
+	ofAddListener(jsonParser.eventJsonDownloadFailed, this, &ofApp::jsonDownloadFailed);
 	ofAddListener(jsonParser.eventJsonInitialCheckOK, this, &ofApp::jsonInitialCheckOK);
-
 	ofAddListener(jsonParser.eventJsonParseFailed, this, &ofApp::jsonParseFailed);
 	ofAddListener(jsonParser.eventAllObjectsParsed, this, &ofApp::jsonContentReady);
 
