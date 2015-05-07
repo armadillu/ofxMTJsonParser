@@ -213,10 +213,9 @@ void ofxMtJsonParser<P,O>::setState(State s){
 			break;
 
 		case FINISHED:{
-			bool ok = true;
 			delete json;
 			json = NULL;
-			ofNotifyEvent(eventAllObjectsParsed, ok, this);
+			ofNotifyEvent(eventAllObjectsParsed, parsedObjects, this);
 			}break;
 	}
 }

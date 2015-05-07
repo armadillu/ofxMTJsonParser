@@ -55,12 +55,12 @@ void ofApp::jsonParseFailed(bool & arg){
 }
 
 
-void ofApp::jsonContentReady(bool & arg){
+void ofApp::jsonContentReady(vector<MyParseableObject*> & parsedObjects_){
 
 	ofLogNotice("ofApp") << "content ready!";
 
 	//get your parsed object *
-	parsedObjects = jsonParser.getParsedObjects();
+	parsedObjects = parsedObjects_;
 
 	//print all parsed objects
 	for(int i = 0; i < parsedObjects.size(); i++){
