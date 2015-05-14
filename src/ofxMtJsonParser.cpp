@@ -75,6 +75,8 @@ void ofxMtJsonParser<P,O>::downloadAndParse(string jsonURL_,
 	args = args_;
 	jsonDownloadDir = jsonDownloadDir_;
 	jsonURL = jsonURL_;
+	ofLogNotice("ofxMtJsonParser") << "start download and parse of JSON '" << jsonURL <<
+	"' in directory '" << jsonDownloadDir_ << "'" << " across " << numThreads << " threads.";
 	setState(DOWNLOADING_JSON);
 }
 
@@ -84,6 +86,7 @@ void ofxMtJsonParser<P,O>::onJsonDownload(ofxSimpleHttpResponse & arg){
 
 	if(arg.ok){
 		jsonAbsolutePath = arg.absolutePath;
+		ofLogNotice("ofxMtJsonParser") << "JSON downloaded to " << jsonAbsolutePath;
 		ofNotifyEvent(eventJsonDownloaded, arg, this);
 		setState(CHECKING_JSON);
 	}else{
@@ -110,9 +113,12 @@ void ofxMtJsonParser<P,O>::checkLocalJsonAndSplitWorkload(){
 	bool ok = true;
 	json = new ofxJSONElement();
 	bool parsingSuccessful;
+	ofLogNotice("ofxMtJsonParser") << "Checking JSON...";
 	parsingSuccessful = json->open(jsonAbsolutePath);
+
 	if(parsingSuccessful){
 
+		ofLogNotice("ofxMtJsonParser") << "JSON Check Successful!";
 		ofNotifyEvent(eventJsonInitialCheckOK, parsingSuccessful, this);
 
 		//use a temp JsonParser subclass instance to count how many objects are there to parse
@@ -153,6 +159,8 @@ void ofxMtJsonParser<P,O>::checkLocalJsonAndSplitWorkload(){
 
 template <class P,class O>
 void ofxMtJsonParser<P,O>::startParsingInSubThreads(){
+
+	ofLogNotice("ofxMtJsonParser") << "Starting " << threads.size() << " JSON parsing threads";
 	for(int i = 0; i < threads.size(); i++){
 		ofxMtJsonParserThread<O>* pjt = threads[i];
 		pjt->startParsing(json, threadConfigs[i], args, &printMutex);
@@ -163,6 +171,7 @@ void ofxMtJsonParser<P,O>::startParsingInSubThreads(){
 template <class P,class O>
 void ofxMtJsonParser<P,O>::mergeThreadResults(){
 
+	ofLogNotice("ofxMtJsonParser") << "Merging Thread Parsing results";
 	if (parsedObjects.size()){
 		ofLogError("ofxMtJsonParser") << "parsed object list not empty?";
 	}
@@ -196,7 +205,7 @@ void ofxMtJsonParser<P,O>::setState(State s){
 			stopThread();
 			bool ok = false;
 			ofNotifyEvent(eventJsonParseFailed, ok, this);
-			ofLogError("ofxMtJsonParser")<< "JSON_PARSE_FAILED! " << jsonDownloadDir;
+			ofLogError("ofxMtJsonParser")<< "JSON PARSE FAILED! " << jsonAbsolutePath;
 			}
 			break;
 
@@ -213,6 +222,7 @@ void ofxMtJsonParser<P,O>::setState(State s){
 			break;
 
 		case FINISHED:{
+			ofLogNotice("ofxMtJsonParser") << "Finished! " << jsonAbsolutePath;
 			delete json;
 			json = NULL;
 			ofNotifyEvent(eventAllObjectsParsed, parsedObjects, this);
