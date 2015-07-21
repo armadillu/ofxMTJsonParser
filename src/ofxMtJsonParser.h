@@ -51,7 +51,7 @@ public:
 	ofEvent<ofxSimpleHttpResponse> eventJsonDownloadFailed;
 	ofEvent<bool> eventJsonInitialCheckOK;
 	ofEvent<bool> eventJsonParseFailed;
-	ofEvent<vector<O*>> eventAllObjectsParsed;
+	ofEvent<vector<O*> > eventAllObjectsParsed;
 
 
 	vector<O*> getParsedObjects(); //use only after you got the "eventDontentReady" callback
