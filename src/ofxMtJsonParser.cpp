@@ -91,8 +91,8 @@ void ofxMtJsonParser<P,O>::onJsonDownload(ofxSimpleHttpResponse & arg){
 		setState(CHECKING_JSON);
 	}else{
 		ofLogError("ofxMtJsonParser") << "download failed! " << arg.reasonForStatus;
-		ofNotifyEvent(eventJsonDownloadFailed, arg, this);
 		setState(DOWNLOAD_FAILED);
+		ofNotifyEvent(eventJsonDownloadFailed, arg, this);
 	}
 }
 
