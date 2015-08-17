@@ -69,7 +69,8 @@ public:
 	}
 
 	static inline bool initFromJsonBool(const ofxJSONElement& json, const string& key, bool verbose, ofMutex * mutex = NULL){
-		if(!json[key].isNull()) {
+
+		if(json.isMember(key)) {
 			bool b = json[key].asBool();
 			if(verbose){
 				LOCK_PRINT_MUTEX

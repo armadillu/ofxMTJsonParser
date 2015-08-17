@@ -269,7 +269,7 @@ void ofxMtJsonParser<P,O>::updateParsing(){
 	for(int i = 0; i < threads.size(); i++){
 		if(threads[i]->isThreadRunning()) numRunning++;
 	}
-	if(numRunning == 0){ //json parse finished, all theads done!
+	if(numRunning == 0 && !isThreadRunning()){ //json parse finished, all theads done!
 		setState(MERGE_THREAD_RESULTS);
 	}
 }
@@ -306,16 +306,17 @@ void ofxMtJsonParser<P,O>::threadedFunction(){
 		ofLogError("ofxMtJsonParser") << exc.what() << " " << exc.message() << " " << exc.displayText();
 	}
 
-	while(isThreadRunning()){
+	bool running = true;
+	while(running){
 		switch (state) {
 			case CHECKING_JSON:
 				checkLocalJsonAndSplitWorkload();
-				stopThread();
+				running = false;
 				break;
 
 			case MERGE_THREAD_RESULTS:
 				mergeThreadResults();
-				stopThread();
+				running = false;
 				break;
 		}
 	}
