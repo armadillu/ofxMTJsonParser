@@ -42,7 +42,6 @@ void ofxMtJsonParserThread<O>::threadedFunction(){
 	}
 	numObjectsToParse = config.endIndex - config.startIndex;
 	parseJsonSubsetThread();
-	stopThread();
 }
 
 template <class O>
