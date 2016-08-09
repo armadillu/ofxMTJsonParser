@@ -299,12 +299,14 @@ float ofxMtJsonParser<P,O>::getTotalProgress(){
 template <class P,class O>
 void ofxMtJsonParser<P,O>::threadedFunction(){
 
+	#if( OF_VERSION_MINOR <= 9 )
 	try {
 		getPocoThread().setName("ofxMtJsonParser");
 		getPocoThread().setOSPriority(Poco::Thread::getMinOSPriority());
 	} catch (Poco::SystemException exc) {
 		ofLogError("ofxMtJsonParser") << exc.what() << " " << exc.message() << " " << exc.displayText();
 	}
+	#endif
 
 	bool running = true;
 	while(running){

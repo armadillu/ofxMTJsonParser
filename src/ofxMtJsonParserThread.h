@@ -6,8 +6,7 @@
 //
 //
 
-#ifndef __BaseApp__ofxMtJsonParserThread__
-#define __BaseApp__ofxMtJsonParserThread__
+#pragma once
 
 #include "ofThread.h"
 #include "ofxJSON.h"
@@ -68,5 +67,4 @@ private:
 	void threadedFunction();
 };
 
-
-#endif /* defined(__BaseApp__ofxMtJsonParserThread__) */
+#include "ofxMtJsonParserThread.inl"

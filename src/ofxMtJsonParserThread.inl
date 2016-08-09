@@ -32,6 +32,7 @@ void ofxMtJsonParserThread<O>::startParsing(ofxJSONElement* json_,
 template <class O>
 void ofxMtJsonParserThread<O>::threadedFunction(){
 
+#if( OF_VERSION_MINOR <= 9 )
 	try {
 		getPocoThread().setName("ofxMtJsonParserThread");
 	} catch (Poco::SystemException exc) {
@@ -40,6 +41,7 @@ void ofxMtJsonParserThread<O>::threadedFunction(){
 		<< " " << exc.displayText();
 		printMutex->unlock();
 	}
+#endif
 	numObjectsToParse = config.endIndex - config.startIndex;
 	parseJsonSubsetThread();
 }

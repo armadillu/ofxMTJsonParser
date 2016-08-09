@@ -6,8 +6,7 @@
 //
 //
 
-#ifndef __BaseApp__ofxMtJsonParser__
-#define __BaseApp__ofxMtJsonParser__
+#pragma once
 
 #include "ofMain.h"
 #include "ofxSimpleHttp.h"
@@ -15,7 +14,7 @@
 #include "ofxMtJsonParserConfig.h"
 
 #include "ofxMtJsonParserThread.h"
-#include "ofxMtJsonParserThread.cpp"//NOTE THE INCLUSION OF .CPP!! Bc of the templated code
+//#include "ofxMtJsonParserThread.cpp"//NOTE THE INCLUSION OF .CPP!! Bc of the templated code
 //http://stackoverflow.com/questions/495021/why-can-templates-only-be-implemented-in-the-header-file
 
 
@@ -103,4 +102,4 @@ protected:
 	vector<O*> parsedObjects;
 };
 
-#endif /* defined(__BaseApp__ofxMtJsonParser__) */
+#include "ofxMtJsonParser.inl"
