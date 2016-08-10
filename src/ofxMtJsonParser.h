@@ -14,8 +14,6 @@
 #include "ofxMtJsonParserConfig.h"
 
 #include "ofxMtJsonParserThread.h"
-//#include "ofxMtJsonParserThread.cpp"//NOTE THE INCLUSION OF .CPP!! Bc of the templated code
-//http://stackoverflow.com/questions/495021/why-can-templates-only-be-implemented-in-the-header-file
 
 
 //Parser, Object
