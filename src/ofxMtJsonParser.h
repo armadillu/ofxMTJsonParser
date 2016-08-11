@@ -23,32 +23,7 @@ public:
 
 	ofxMtJsonParser();
 
-	//You need to provide 2 call backs and a listener, similar to to ofAddListener()
-	//downloadAndParse( "url",
-	//					"dir",
-	//					4,
-	//					this,
-	//					&myClass::onCalcNumEntriesInJson,
-	//					&myClass::onCalcNumEntriesInJson
-	//					);
-
-	template <typename ObjectCountData, typename ParseData, class ListenerClass>
-	void downloadAndParse(string jsonURL_,
-						  string jsonDownloadDir_,
-						  int numThreads_,
-						  ListenerClass * listener,
-						  void (ListenerClass::*onCalcNumEntriesMethod)(ObjectCountData&),
-						  void (ListenerClass::*onParseObjectMethod)(ParseData&)
-						  ){
-
-		numThreads = ofClamp(numThreads_, 1, INT_MAX);
-		jsonDownloadDir = jsonDownloadDir_;
-		jsonURL = jsonURL_;
-		ofLogNotice("ofxMtJsonParser") << "start download and parse of JSON '" << jsonURL <<
-		"' across " << numThreads << " threads.";
-		setState(DOWNLOADING_JSON);
-
-	}
+	void downloadAndParse(string jsonURL_, string jsonDownloadDir_, int numThreads_);
 
 	void update();
 
@@ -64,17 +39,16 @@ public:
 	bool isParsingJson(){ return state == PARSING_JSON_IN_SUBTHREADS; }
 	ofxSimpleHttp & getHttp(){return http;} //in case you want to config it
 
-	// EVENTS //
-	ofEvent<ofxSimpleHttpResponse> eventJsonDownloaded;
-	ofEvent<ofxSimpleHttpResponse> eventJsonDownloadFailed;
+	// PARSE EVENTS ////// you need to subscribe to these
+	ofEvent<ofxMtJsonParserThread::JsonStructureData> eventDescribeJsonStructure;
+	ofEvent<ofxMtJsonParserThread::SingleObjectParseData> eventParseSingleObject;
 
-	ofEvent<ofxMtJsonParserThread::ObjectCountData> eventCalcNumEntriesInJson;
-	ofEvent<ofxMtJsonParserThread::ParseInputOutput> eventParseObject;
-
-	ofEvent<bool> eventJsonInitialCheckOK;
-	ofEvent<bool> eventJsonParseFailed;
+	// STATUS EVENTS ////// you probably want to subscribe to these
+	ofEvent<ofxSimpleHttpResponse> 	eventJsonDownloaded;
+	ofEvent<ofxSimpleHttpResponse> 	eventJsonDownloadFailed;
+	ofEvent<void> 					eventJsonInitialCheckOK;
+	ofEvent<void> 					eventJsonParseFailed;
 	ofEvent<vector<ParsedObject*> > eventAllObjectsParsed;
-
 
 	vector<ParsedObject*> getParsedObjects(); //use only after you got the "eventDontentReady" callback
 
@@ -91,9 +65,9 @@ protected:
 		FINISHED
 	};
 
-
 	string jsonAbsolutePath;
-	ofxJSONElement * json;
+	ofxJSONElement * json = nullptr;
+	ofxJSONElement * jsonObjectArray = nullptr;
 
 	int numEntriesInJson;
 
@@ -121,6 +95,5 @@ protected:
 
 	vector<ParsedObject*> parsedObjects;
 
-	
 };
 

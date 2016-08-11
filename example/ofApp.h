@@ -20,20 +20,22 @@ public:
 	void keyPressed(int key){}
 	void keyReleased(int key){}
 
-	// APP CALLBACKS ////////////////////////////////////////
+	// PARSING CALLBACKS ///////////////////////////////////////////////////////////////////////////
 
 	//you will have to do minor parsing here, just let us know how many objects there are in
 	//the json we provide
-	void onCalcNumEntriesInJson(ofxMtJsonParserThread::ObjectCountData &); //minor parsing
+	void onDescribeJsonStructure(ofxMtJsonParserThread::JsonStructureData &); //minor parsing
 
 	//you will get N calls to this method, one per each JSON object in your json
 	//you will have to alloc and "fill in" data into a new object from the json obj we provide
-	void onParseObject(ofxMtJsonParserThread::ParseInputOutput &);
+	void onParseSingleObject(ofxMtJsonParserThread::SingleObjectParseData &);
+
+	// STATE CALLBACKS /////////////////////////////////////////////////////////////////////////////
 
 	void jsonDownloaded(ofxSimpleHttpResponse & arg);
 	void jsonDownloadFailed(ofxSimpleHttpResponse & arg);
-	void jsonInitialCheckOK(bool &);
-	void jsonParseFailed(bool & arg);
+	void jsonInitialCheckOK();
+	void jsonParseFailed();
 	void jsonContentReady(vector<ParsedObject*> & arg);
 
 	// APP STUFF ////////////////////////////////////////////

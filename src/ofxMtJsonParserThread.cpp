@@ -44,7 +44,7 @@ void ofxMtJsonParserThread::threadedFunction(){
 	//parseJsonSubsetThread();
 	int start = config.startIndex;
 	int end = config.endIndex;
-	ParseInputOutput arg;
+	SingleObjectParseData arg;
 	arg.printMutex = printMutex;
 	for(int i = start; i <= end; i++){
 		const ofxJSONElement & jsonRef = *json;
@@ -53,7 +53,7 @@ void ofxMtJsonParserThread::threadedFunction(){
 		arg.jsonObj = (ofxJSONElement *) &(jsonRef[i]);
 		arg.object = nullptr;
 
-		ofNotifyEvent(eventParseObject, arg);
+		ofNotifyEvent(eventParseSingleObject, arg);
 		if(arg.object != nullptr){
 			parsedObjects.push_back(arg.object);
 		}

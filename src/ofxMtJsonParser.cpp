@@ -52,7 +52,7 @@ string ofxMtJsonParser::getDrawableState(){
 
 ofxMtJsonParser::ofxMtJsonParser(){
 	state = IDLE;
-	json = NULL;
+	json = jsonObjectArray = nullptr;
 	numEntriesInJson = numThreads = 0;
 	ofAddListener(http.httpResponse, this, &ofxMtJsonParser::onJsonDownload);
 	http.setNeedsChecksumMatchToSkipDownload(true);
@@ -84,6 +84,17 @@ vector<ParsedObject*> ofxMtJsonParser::getParsedObjects(){
 }
 
 
+void ofxMtJsonParser::downloadAndParse(string jsonURL_, string jsonDownloadDir_, int numThreads_ ){
+
+	numEntriesInJson = 0;
+	jsonObjectArray = json = nullptr;
+	numThreads = ofClamp(numThreads_, 1, INT_MAX);
+	jsonDownloadDir = jsonDownloadDir_;
+	jsonURL = jsonURL_;
+	ofLogNotice("ofxMtJsonParser") << "start download and parse of JSON '" << jsonURL << "' across " << numThreads << " threads.";
+	setState(DOWNLOADING_JSON);
+}
+
 
 void ofxMtJsonParser::checkLocalJsonAndSplitWorkload(){
 
@@ -96,42 +107,60 @@ void ofxMtJsonParser::checkLocalJsonAndSplitWorkload(){
 	if(parsingSuccessful){
 
 		ofLogNotice("ofxMtJsonParser") << "JSON Check Successful!";
-		ofNotifyEvent(eventJsonInitialCheckOK, parsingSuccessful, this);
+		ofNotifyEvent(eventJsonInitialCheckOK, this);
 
-		//use a temp JsonParser subclass instance to count how many objects are there to parse
+		//use a temp JsonParser subclass instance to count how many objects are there to parse - and define where
+		//in the json the object list is located
 		ofxMtJsonParserThread * temp = new ofxMtJsonParserThread();
-		temp->eventCalcNumEntriesInJson = eventCalcNumEntriesInJson;
-		//numEntriesInJson = temp->getNumEntriesInJson(json);
-		ofxMtJsonParserThread::ObjectCountData args;
-		args.jsonObj = json;
-		ofNotifyEvent(temp->eventCalcNumEntriesInJson, args);
+		//copy the parser events to the thread object, so that it can notify to listeners
+		temp->eventDescribeJsonStructure = eventDescribeJsonStructure;
+		ofxMtJsonParserThread::JsonStructureData args;
+		args.fullJson = json;
+		ofNotifyEvent(temp->eventDescribeJsonStructure, args);
 		delete temp;
-		numEntriesInJson = args.numObjects;
-		float numObjectsPerThread = numEntriesInJson / float(numThreads);
 
-		threadConfigs.resize(numThreads);
+		if(args.objectArray == nullptr){ //user couldnt point us to the object array - abort!
 
-		for(int i = 0; i < numThreads; i++){
-			ofxMtJsonParserThread * pjt = new ofxMtJsonParserThread();
-			pjt->eventParseObject = eventParseObject;
-			pjt->eventCalcNumEntriesInJson = eventCalcNumEntriesInJson;
-			threads.push_back(pjt);
+			ofLogError("ofxMtJsonParser") << "eventDescribeJsonStructure listener did not fill in required data (objectArray == NULL)!";
+			ofLogError("ofxMtJsonParser") << "You either forgot to add a listener for eventDescribeJsonStructure, or the JSON had an unexpected format";
+			setState(JSON_PARSE_FAILED);
 
-			int start, end;
-			start = floor(i * numObjectsPerThread);
+		}else{ //user gave us a json reference to parse
 
-			if (i < numThreads - 1){
-				end = floor((i+1) * numObjectsPerThread) - 1;
-			}else{ //special case for last core, int division might not be even
-				end = numEntriesInJson - 1;
+			if(args.objectArray->isArray()){
+
+				numEntriesInJson = args.objectArray->size();
+				float numObjectsPerThread = numEntriesInJson / float(numThreads);
+				jsonObjectArray = args.objectArray; //store a ptr to that json obj array structure
+				threadConfigs.resize(numThreads);
+
+				for(int i = 0; i < numThreads; i++){
+
+					ofxMtJsonParserThread * pjt = new ofxMtJsonParserThread();
+					//copy the parser events to the thread object, so that thread can notify to listeners for them to do the threaded parsing
+					pjt->eventParseSingleObject = eventParseSingleObject;
+					threads.push_back(pjt);
+
+					int start, end;
+					start = floor(i * numObjectsPerThread);
+
+					if (i < numThreads - 1){
+						end = floor((i+1) * numObjectsPerThread) - 1;
+					}else{ //special case for last core, int division might not be even
+						end = numEntriesInJson - 1;
+					}
+					ofxMtJsonParserThread::Config tConfig;
+					tConfig.threadID = i;
+					tConfig.startIndex = start;
+					tConfig.endIndex = end;
+					threadConfigs[i] = tConfig;
+				}
+				setState(PARSING_JSON_IN_SUBTHREADS);
+			}else{
+				ofLogError("ofxMtJsonParser") << "eventDescribeJsonStructure listener provided wrong data (objectArray IS NOT an OBJECT ARRAY!)!";
+				setState(JSON_PARSE_FAILED);
 			}
-			ofxMtJsonParserThread::Config tConfig;
-			tConfig.threadID = i;
-			tConfig.startIndex = start;
-			tConfig.endIndex = end;
-			threadConfigs[i] = tConfig;
 		}
-		setState(PARSING_JSON_IN_SUBTHREADS);
 	}else{
 		setState(JSON_PARSE_FAILED);
 	}
@@ -144,7 +173,7 @@ void ofxMtJsonParser::startParsingInSubThreads(){
 	ofLogNotice("ofxMtJsonParser") << "Starting " << threads.size() << " JSON parsing threads";
 	for(int i = 0; i < threads.size(); i++){
 		ofxMtJsonParserThread * pjt = threads[i];
-		pjt->startParsing(json, threadConfigs[i], &printMutex);
+		pjt->startParsing(jsonObjectArray, threadConfigs[i], &printMutex);
 	}
 }
 
@@ -182,12 +211,10 @@ void ofxMtJsonParser::setState(State s){
 			startThread();
 			break;
 
-		case JSON_PARSE_FAILED:{
+		case JSON_PARSE_FAILED:
 			stopThread();
-			bool ok = false;
-			ofNotifyEvent(eventJsonParseFailed, ok, this);
+			ofNotifyEvent(eventJsonParseFailed, this);
 			ofLogError("ofxMtJsonParser")<< "JSON PARSE FAILED! " << jsonAbsolutePath;
-			}
 			break;
 
 		case PARSING_JSON_IN_SUBTHREADS:
