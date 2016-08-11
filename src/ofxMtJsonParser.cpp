@@ -8,9 +8,7 @@
 
 #include "ofxMtJsonParser.h"
 
-
-template <class P,class O>
-string ofxMtJsonParser<P,O>::getDrawableState(){
+string ofxMtJsonParser::getDrawableState(){
 
 	string msg = "State: ";
 
@@ -51,8 +49,8 @@ string ofxMtJsonParser<P,O>::getDrawableState(){
 	return msg;
 }
 
-template <class P,class O>
-ofxMtJsonParser<P,O>::ofxMtJsonParser(){
+
+ofxMtJsonParser::ofxMtJsonParser(){
 	state = IDLE;
 	json = NULL;
 	numEntriesInJson = numThreads = 0;
@@ -61,24 +59,7 @@ ofxMtJsonParser<P,O>::ofxMtJsonParser(){
 }
 
 
-
-template <class P,class O>
-void ofxMtJsonParser<P,O>::downloadAndParse(string jsonURL_,
-										  string jsonDownloadDir_,
-										  int numThreads_,
-										  ofxMtJsonParserConfig* args_){
-	numThreads = ofClamp(numThreads_, 1, INT_MAX);
-	args = args_;
-	jsonDownloadDir = jsonDownloadDir_;
-	jsonURL = jsonURL_;
-	ofLogNotice("ofxMtJsonParser") << "start download and parse of JSON '" << jsonURL <<
-	"' across " << numThreads << " threads.";
-	setState(DOWNLOADING_JSON);
-}
-
-
-template <class P,class O>
-void ofxMtJsonParser<P,O>::onJsonDownload(ofxSimpleHttpResponse & arg){
+void ofxMtJsonParser::onJsonDownload(ofxSimpleHttpResponse & arg){
 
 	if(arg.ok){
 		jsonAbsolutePath = arg.absolutePath;
@@ -93,18 +74,18 @@ void ofxMtJsonParser<P,O>::onJsonDownload(ofxSimpleHttpResponse & arg){
 }
 
 
-template <class P,class O>
-vector<O*> ofxMtJsonParser<P,O>::getParsedObjects(){
+
+vector<ParsedObject*> ofxMtJsonParser::getParsedObjects(){
 	if (state == FINISHED){
 		return parsedObjects;
 	}
-	vector<O*> empty;
+	vector<ParsedObject*> empty;
 	return empty;
 }
 
 
-template <class P,class O>
-void ofxMtJsonParser<P,O>::checkLocalJsonAndSplitWorkload(){
+
+void ofxMtJsonParser::checkLocalJsonAndSplitWorkload(){
 
 	bool ok = true;
 	json = new ofxJSONElement();
@@ -118,32 +99,36 @@ void ofxMtJsonParser<P,O>::checkLocalJsonAndSplitWorkload(){
 		ofNotifyEvent(eventJsonInitialCheckOK, parsingSuccessful, this);
 
 		//use a temp JsonParser subclass instance to count how many objects are there to parse
-		ofxMtJsonParserThread<O> * temp = new P();
-		numEntriesInJson = temp->getNumEntriesInJson(json);
+		ofxMtJsonParserThread * temp = new ofxMtJsonParserThread();
+		temp->eventCalcNumEntriesInJson = eventCalcNumEntriesInJson;
+		//numEntriesInJson = temp->getNumEntriesInJson(json);
+		ofxMtJsonParserThread::ObjectCountData args;
+		args.jsonObj = json;
+		ofNotifyEvent(temp->eventCalcNumEntriesInJson, args);
 		delete temp;
-
+		numEntriesInJson = args.numObjects;
 		float numObjectsPerThread = numEntriesInJson / float(numThreads);
 
 		threadConfigs.resize(numThreads);
 
 		for(int i = 0; i < numThreads; i++){
-			ofxMtJsonParserThread<O> * pjt = new P();
+			ofxMtJsonParserThread * pjt = new ofxMtJsonParserThread();
+			pjt->eventParseObject = eventParseObject;
+			pjt->eventCalcNumEntriesInJson = eventCalcNumEntriesInJson;
 			threads.push_back(pjt);
 
 			int start, end;
 			start = floor(i * numObjectsPerThread);
 
-			if (i < numThreads -1){
+			if (i < numThreads - 1){
 				end = floor((i+1) * numObjectsPerThread) - 1;
 			}else{ //special case for last core, int division might not be even
 				end = numEntriesInJson - 1;
 			}
-			ofxMtJsonParserThreadConfig tConfig;
+			ofxMtJsonParserThread::Config tConfig;
 			tConfig.threadID = i;
 			tConfig.startIndex = start;
 			tConfig.endIndex = end;
-			//printf("%d > %d - %d\n", i, start, end);
-
 			threadConfigs[i] = tConfig;
 		}
 		setState(PARSING_JSON_IN_SUBTHREADS);
@@ -153,19 +138,19 @@ void ofxMtJsonParser<P,O>::checkLocalJsonAndSplitWorkload(){
 }
 
 
-template <class P,class O>
-void ofxMtJsonParser<P,O>::startParsingInSubThreads(){
+
+void ofxMtJsonParser::startParsingInSubThreads(){
 
 	ofLogNotice("ofxMtJsonParser") << "Starting " << threads.size() << " JSON parsing threads";
 	for(int i = 0; i < threads.size(); i++){
-		ofxMtJsonParserThread<O>* pjt = threads[i];
-		pjt->startParsing(json, threadConfigs[i], args, &printMutex);
+		ofxMtJsonParserThread * pjt = threads[i];
+		pjt->startParsing(json, threadConfigs[i], &printMutex);
 	}
 }
 
 
-template <class P,class O>
-void ofxMtJsonParser<P,O>::mergeThreadResults(){
+
+void ofxMtJsonParser::mergeThreadResults(){
 
 	ofLogNotice("ofxMtJsonParser") << "Merging Thread Parsing results";
 	if (parsedObjects.size()){
@@ -174,14 +159,14 @@ void ofxMtJsonParser<P,O>::mergeThreadResults(){
 	parsedObjects.clear();
 
 	for(int i = 0; i < threads.size(); i++){
-		vector<O*> threadObjects = threads[i]->getParsedObjects();
+		vector<ParsedObject*> threadObjects = threads[i]->getParsedObjects();
 		parsedObjects.insert(parsedObjects.begin(), threadObjects.begin(), threadObjects.end());
 	}
 }
 
 
-template <class P,class O>
-void ofxMtJsonParser<P,O>::setState(State s){
+
+void ofxMtJsonParser::setState(State s){
 
 	state = s;
 	switch(state){
@@ -227,8 +212,8 @@ void ofxMtJsonParser<P,O>::setState(State s){
 }
 
 
-template <class P,class O>
-void ofxMtJsonParser<P,O>::update(){
+
+void ofxMtJsonParser::update(){
 
 	switch (state) {
 
@@ -250,7 +235,6 @@ void ofxMtJsonParser<P,O>::update(){
 				}
 				threads.clear();
 				threadConfigs.clear();
-				args = NULL;
 				setState(FINISHED);
 			}
 			break;
@@ -258,8 +242,8 @@ void ofxMtJsonParser<P,O>::update(){
 }
 
 
-template <class P,class O>
-void ofxMtJsonParser<P,O>::updateParsing(){
+
+void ofxMtJsonParser::updateParsing(){
 
 	int numRunning = 0;
 	for(int i = 0; i < threads.size(); i++){
@@ -271,8 +255,8 @@ void ofxMtJsonParser<P,O>::updateParsing(){
 }
 
 
-template <class P,class O>
-vector<float> ofxMtJsonParser<P,O>::getPerThreadProgress(){
+
+vector<float> ofxMtJsonParser::getPerThreadProgress(){
 	vector<float> p;
 
 	if(state == PARSING_JSON_IN_SUBTHREADS || state == MERGE_THREAD_RESULTS || state == FINISHED ){
@@ -283,8 +267,8 @@ vector<float> ofxMtJsonParser<P,O>::getPerThreadProgress(){
 	return p;
 }
 
-template <class P,class O>
-float ofxMtJsonParser<P,O>::getTotalProgress(){
+
+float ofxMtJsonParser::getTotalProgress(){
 	vector<float> ps = getPerThreadProgress();
 	float threadsP = 0.0f;
 	for(int i = 0; i < ps.size(); i++){ threadsP += ps[i]; }
@@ -292,8 +276,8 @@ float ofxMtJsonParser<P,O>::getTotalProgress(){
 }
 
 
-template <class P,class O>
-void ofxMtJsonParser<P,O>::threadedFunction(){
+
+void ofxMtJsonParser::threadedFunction(){
 
 	#if( OF_VERSION_MINOR <= 9 )
 	try {

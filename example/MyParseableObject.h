@@ -9,7 +9,7 @@
 #ifndef BaseApp_MyParseableObject_h
 #define BaseApp_MyParseableObject_h
 
-class MyParseableObject {
+class MyParseableObject : public ParsedObject {
 
 public:
 
