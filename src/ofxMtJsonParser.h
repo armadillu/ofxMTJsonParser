@@ -16,44 +16,30 @@
 #include "ofxMtJsonParserThread.h"
 
 
-//Parser, Object
-template <class P,class O>
-class ofxMtJsonParser: public ofThread{
+class JsonParser : public ofThread{
 
 public:
 
-	ofxMtJsonParser();
+	virtual void downloadAndParse(	string jsonURL_,
+								  string jsonDownloadDir_,
+								  int numThreads,
+								  ofxMtJsonParserConfig* args) = 0;
 
-	void downloadAndParse(string jsonURL_,
-						  string jsonDownloadDir_,
-						  int numThreads,
-						  ofxMtJsonParserConfig* args);
+	virtual void update() = 0;
 
-	void update();
-
-	// STATUS //
-	bool isBusy();
+	virtual float getTotalProgress() = 0;
+	bool isBusy(){ return state != IDLE && state != DOWNLOAD_FAILED && state != FINISHED; };
 	bool isDownloadingJson(){ return state == DOWNLOADING_JSON; }
 	bool isCheckingJson(){ return state == CHECKING_JSON; }
 	bool isParsingJson(){ return state == PARSING_JSON_IN_SUBTHREADS; }
-	vector<float> getPerThreadProgress(); //returns a vector of size NumThreads with a float with [0..1]
-	float getTotalProgress();
-	string getDrawableState();
+	virtual string getDrawableState() = 0;
 
-	int getNumEntriesInJson(){return numEntriesInJson;}
-
-	// EVENTS //
+	ofxSimpleHttp & getHttp(){return http;} //in case you want to config it
 
 	ofEvent<ofxSimpleHttpResponse> eventJsonDownloaded;
 	ofEvent<ofxSimpleHttpResponse> eventJsonDownloadFailed;
 	ofEvent<bool> eventJsonInitialCheckOK;
 	ofEvent<bool> eventJsonParseFailed;
-	ofEvent<vector<O*> > eventAllObjectsParsed;
-
-
-	vector<O*> getParsedObjects(); //use only after you got the "eventDontentReady" callback
-
-	ofxSimpleHttp & getHttp(){return http;} //in case you want to config it
 
 protected:
 
@@ -68,21 +54,57 @@ protected:
 		FINISHED
 	};
 
-	ofxSimpleHttp http;
+	virtual void setState(State s) = 0;
+
 	State state;
+	int numThreads;
+	ofxSimpleHttp http;
+	ofxMtJsonParserConfig *args;
 
 	string jsonURL;
 	string jsonDownloadDir;
+
+};
+
+
+//Parser, Object
+template <class P,class O>
+class ofxMtJsonParser: public JsonParser{
+
+public:
+
+	ofxMtJsonParser();
+
+	void downloadAndParse(string jsonURL_,
+						  string jsonDownloadDir_,
+						  int numThreads,
+						  ofxMtJsonParserConfig* args);
+
+	void update();
+
+	// STATUS //
+	vector<float> getPerThreadProgress(); //returns a vector of size NumThreads with a float with [0..1]
+	float getTotalProgress();
+	string getDrawableState();
+
+	int getNumEntriesInJson(){return numEntriesInJson;}
+
+	// EVENTS //
+	//see superclass events too!
+	ofEvent<vector<O*> > eventAllObjectsParsed;
+
+	vector<O*> getParsedObjects(); //use only after you got the "eventDontentReady" callback
+
+protected:
+
+
 	string jsonAbsolutePath;
 	ofxJSONElement * json;
 
 	int numEntriesInJson;
 
-	ofxMtJsonParserConfig *args;
-
 	ofMutex printMutex;
 
-	int numThreads;
 	vector<ofxMtJsonParserThread<O>*> threads;
 	vector<ofxMtJsonParserThreadConfig> threadConfigs;
 

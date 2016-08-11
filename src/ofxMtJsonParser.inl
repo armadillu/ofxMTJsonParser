@@ -8,20 +8,6 @@
 
 #include "ofxMtJsonParser.h"
 
-template <class P,class O>
-ofxMtJsonParser<P,O>::ofxMtJsonParser(){
-	state = IDLE;
-	json = NULL;
-	numEntriesInJson = numThreads = 0;
-	ofAddListener(http.httpResponse, this, &ofxMtJsonParser::onJsonDownload);
-	http.setNeedsChecksumMatchToSkipDownload(true);
-}
-
-template <class P,class O>
-bool ofxMtJsonParser<P,O>::isBusy(){
-	return state != IDLE && state != DOWNLOAD_FAILED && state != FINISHED;
-}
-
 
 template <class P,class O>
 string ofxMtJsonParser<P,O>::getDrawableState(){
@@ -41,7 +27,7 @@ string ofxMtJsonParser<P,O>::getDrawableState(){
 			break;
 		case CHECKING_JSON:{
 			msg += "CHECKING_JSON";
-			}break;
+		}break;
 		case JSON_PARSE_FAILED:
 			msg += "JSON_PARSE_FAILED";
 			break;
@@ -54,7 +40,7 @@ string ofxMtJsonParser<P,O>::getDrawableState(){
 				"% parsed. (" + ofToString((int)threads[i]->getNumParsedObjects()) + "/" +
 				ofToString((int)threads[i]->getNumObjectsToParse()) + ")\n";
 			}
-			}break;
+		}break;
 		case MERGE_THREAD_RESULTS:
 			msg += "MERGE_THREAD_RESULTS";
 			break;
@@ -64,6 +50,16 @@ string ofxMtJsonParser<P,O>::getDrawableState(){
 	}
 	return msg;
 }
+
+template <class P,class O>
+ofxMtJsonParser<P,O>::ofxMtJsonParser(){
+	state = IDLE;
+	json = NULL;
+	numEntriesInJson = numThreads = 0;
+	ofAddListener(http.httpResponse, this, &ofxMtJsonParser::onJsonDownload);
+	http.setNeedsChecksumMatchToSkipDownload(true);
+}
+
 
 
 template <class P,class O>
