@@ -27,28 +27,17 @@ public:
 		int endIndex;
 	};
 
-	ofxMtJsonParserThread();
-
-	void startParsing(ofxJSONElement* json_,
-					  ofxMtJsonParserThread::Config config,
-					  ofMutex * printMutex_);
-
-
 	// We need you to intervene in 2 places, for 2 actions to take place //////////////////////////
-
-	// 1 - HOW MANY ELEMENTS TO PARSE IN JSON ///////////////////////////////
+	// 1 - LOCATE JSON OBJECT ARRAY /////////////////////////////////////////
 
 	struct JsonStructureData{
 		ofxJSONElement * fullJson; //this will provide you the full json data
 		ofxJSONElement * objectArray; 	//you are supposed to send back a ptr to the json structure that has
-										//the object array you want to parse
+		//the object array you want to parse
 		JsonStructureData(){
 			objectArray = objectArray = nullptr;
 		}
 	};
-
-	ofEvent<JsonStructureData> eventDescribeJsonStructure; //listener must get the referenced int and set the value
-														//of that int to be the same as the # of objects in the json.
 
 	// 2 - YOUR CUSTOM PARSING HERE /////////////////////////////////////////
 
@@ -58,16 +47,28 @@ public:
 		ofxJSONElement * jsonObj;
 		ofMutex * printMutex;
 		ParsedObject * object; 	//its the event listener's job to allocate a new ParsedObject,
-								//"fill it in" with data from the json, and assign it to object.
+		//"fill it in" with data from the json, and assign it to object.
 		SingleObjectParseData(){
 			printMutex = nullptr;
 			object = nullptr;
 		}
 	};
 
-	ofEvent<SingleObjectParseData> eventParseSingleObject;
-
 	////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	ofxMtJsonParserThread();
+
+	
+	void startParsing(ofxJSONElement* json_,
+					  ofxMtJsonParserThread::Config config,
+					  ofMutex * printMutex_,
+					  std::function<void (SingleObjectParseData &)> parseSingleObjectUserLambda
+					  );
+
+
+
+
 
 	int getNumParsedObjects();
 	int getNumObjectsToParse(); //total # of objects to parse
@@ -91,6 +92,8 @@ protected:
 
 	ofxMtJsonParserConfig * args;
 	Config config;
+
+	std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectUserLambda;
 
 private:
 

@@ -23,25 +23,28 @@ public:
 
 	ofxMtJsonParser();
 
-	void downloadAndParse(string jsonURL_, string jsonDownloadDir_, int numThreads_);
+	void downloadAndParse(string jsonURL_,
+						  string jsonDownloadDir_,
+						  int numThreads_,
+						  std::function<void (ofxMtJsonParserThread::JsonStructureData &)> describeJsonFunc,
+						  std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectFunc
+						);
 
 	void update();
 
 	// STATUS //
 	vector<float> getPerThreadProgress(); //returns a vector of size NumThreads with a float with [0..1]
 	float getTotalProgress();
+	bool isBusy(){return parsing;}
 	string getDrawableState();
 
 	int getNumEntriesInJson(){return numEntriesInJson;}
-	bool isBusy(){ return state != IDLE && state != DOWNLOAD_FAILED && state != FINISHED; };
 	bool isDownloadingJson(){ return state == DOWNLOADING_JSON; }
 	bool isCheckingJson(){ return state == CHECKING_JSON; }
 	bool isParsingJson(){ return state == PARSING_JSON_IN_SUBTHREADS; }
 	ofxSimpleHttp & getHttp(){return http;} //in case you want to config it
 
-	// PARSE EVENTS ////// you need to subscribe to these
-	ofEvent<ofxMtJsonParserThread::JsonStructureData> eventDescribeJsonStructure;
-	ofEvent<ofxMtJsonParserThread::SingleObjectParseData> eventParseSingleObject;
+	vector<ParsedObject*> getParsedObjects(); //use only after you got the "eventDontentReady" callback
 
 	// STATUS EVENTS ////// you probably want to subscribe to these
 	ofEvent<ofxSimpleHttpResponse> 	eventJsonDownloaded;
@@ -50,7 +53,6 @@ public:
 	ofEvent<void> 					eventJsonParseFailed;
 	ofEvent<vector<ParsedObject*> > eventAllObjectsParsed;
 
-	vector<ParsedObject*> getParsedObjects(); //use only after you got the "eventDontentReady" callback
 
 protected:
 
@@ -93,7 +95,11 @@ protected:
 
 	void threadedFunction();
 
+	std::function<void (ofxMtJsonParserThread::JsonStructureData &)> describeJsonUserLambda;
+	std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectUserLambda;
+
 	vector<ParsedObject*> parsedObjects;
+	bool parsing = false;
 
 };
 

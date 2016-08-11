@@ -12,79 +12,84 @@ void ofApp::setup(){
 	ofAddListener(jsonParser.eventJsonParseFailed, this, &ofApp::jsonParseFailed);
 	ofAddListener(jsonParser.eventAllObjectsParsed, this, &ofApp::jsonContentReady);
 
-	//subscribe to do the actual parsing bits; there's 2 stages:
-	// 1 - eventCalcNumEntriesInJson >> you need to report back how many elements are there in the json
-	ofAddListener(jsonParser.eventDescribeJsonStructure, this, &ofApp::onDescribeJsonStructure);
-	ofAddListener(jsonParser.eventParseSingleObject, this, &ofApp::onParseSingleObject);
-
 	string jsonURL_CH = "http://ch-localprojects.s3.amazonaws.com/json_data/api.objects.latest.json";
 
 	//config the http downloader if you need to (proxy, etc)
 	jsonParser.getHttp().setSpeedLimit(50000); // kb/sec
 
-	//start the download and parse process
+	// LAMBDA DEFINITIONS /////////////////////////////////////////////////////////////////////////////////////
+
+	// 1 - create your lambda for "Stage 1" >> describle where the object array is inside the JSON ////////////
+	//you will have to do minor parsing here, just let us know where the object array is inside the JSON
+	auto describeJsonStructureLambda = [](ofxMtJsonParserThread::JsonStructureData & inOutData){
+
+		ofxJSONElement & jsonRef = *(inOutData.fullJson); //pointers mess up the json syntax somehow
+		//here I am getting the full plain json file; bc I know its schema, I can dig into what
+		//I want to find the # of objects in the json, and to point the parser into that big array
+		//of objects
+		if(jsonRef.isArray()){
+			inOutData.objectArray = &(jsonRef);//in this case, the object array is at root level in the JSON
+			//in other cases, it might be deeper into the structure, you would
+			//need to navigate ie data.objectArray = jsonRef["data"]["objects"]
+
+		}else{
+
+			ofLogError("MyJsonParserThread") << "JSON has unexpected format!";
+			//if the json is not what we exepcted it to be, let the parser know by filling it the data like this:
+			inOutData.objectArray = NULL;
+		}
+	};
+
+
+	// 2 - Create your lambda for "Stage 2" >> Parse a single object inside the JSON //////////////////////////
+	//you will get N calls to this lambda, one per each JSON object in the JSON object array you pointed us to.
+	//the lambda will be called concurrently from different threads, so be aware of that.
+	//you will have to alloc and "fill in" data into a new object from the json obj we provide
+	auto parseSingleObjectLambda = [](ofxMtJsonParserThread::SingleObjectParseData & inOutData){
+
+		const ofxJSONElement & jsonRef = *(inOutData.jsonObj); //pointers mess up the json syntax somehow
+
+		//syncronized logging possible
+		//inOutData.printMutex->lock();//as this method gets called from concurrent threads, you might want to
+		//lock and unlock the provided mutex b4 printing - or even better, dont print at all to keep it faster
+		//ofLogNotice("ofApp") << "Thread " << inOutData.threadID <<" parsing OBJ #" << inOutData.objectID;
+		//inOutData.printMutex->unlock();
+
+		string title, description;
+
+		try{ //do some parsing - catching exceptions
+			title = ofxMtJsonParserUtils::initFromJsonString(jsonRef, "title_raw", false, inOutData.printMutex);
+			description = ofxMtJsonParserUtils::initFromJsonString(jsonRef, "dimensions", false, inOutData.printMutex);
+		}catch(Exception exc){
+			inOutData.printMutex->lock();
+			ofLogError("ofApp") << exc.what() << " " << exc.message() << " " << exc.displayText() << " WHILE PARSING OBJ " << inOutData.objectID;
+			inOutData.printMutex->unlock();
+		}
+
+		//in this example, wefilter out objects that are incomplete (ie no title)
+		if(title.size() && description.size()){
+			//make new object (must be subclass of "ParsedObject") and "fill it in"
+			MyParseableObject * o = new MyParseableObject();
+			o->setTitle( title );
+			o->setDescription( description );
+			inOutData.object = o; //this is how we "return" the object to the parser;
+		}else{
+			//by not giving a valid pointer to inOutData.object, we are effectively rejecting the object in that
+			//Json value... This is how you discard objects that you don't want in the final object list.
+		}
+	};
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	//start the download and parse process, providing your custom lambdas
 	jsonParser.downloadAndParse(jsonURL_CH, 	//json url
 								"json", 		//directory where to save the json file
-								8 				//num threads to parse on
+								8, 				//num threads to parse on
+								describeJsonStructureLambda,//your lambda to describe the JSON structure
+								parseSingleObjectLambda		//your lambda to parse each of the objects in the JSON
 								);
 }
-
-void ofApp::onDescribeJsonStructure(ofxMtJsonParserThread::JsonStructureData & inOutData){
-
-	ofLogNotice("ofApp") << "onDescribeJsonStructure!";
-	ofxJSONElement & jsonRef = *(inOutData.fullJson); //pointers mess up the json syntax somehow
-
-	//here I am getting the full plain json file; bc I know its schema, I can dig into what
-	//I want to find the # of objects in the json, and to point the parser into that big array
-	//of objects
-	if(jsonRef.isArray()){
-		inOutData.objectArray = &(jsonRef);//in this case, the object array is at root level in the JSON
-										//in other cases, it might be deeper into the structure, you would
-										//need to navigate ie data.objectArray = jsonRef["data"]["objects"]
-
-	}else{
-
-		ofLogError("MyJsonParserThread") << "JSON has unexpected format!";
-		//if the json is not what we exepcted it to be, let the parser know by filling it the data like this:
-		inOutData.objectArray = NULL;
-	}
-}
-
-void ofApp::onParseSingleObject(ofxMtJsonParserThread::SingleObjectParseData & inOutData){
-
-	ofLogNotice("ofApp") << "onParseSingleObject!";
-	const ofxJSONElement & jsonRef = *(inOutData.jsonObj); //pointers mess up the json syntax somehow
-
-	inOutData.printMutex->lock();//as this method gets called from concurrent threads, you might want to
-								//lock and unlock the provided mutex b4 printing - or even better,
-								//dont print at all to keep it faster
-	ofLogNotice("ofApp") << "Thread " << inOutData.threadID <<" parsing OBJ #" << inOutData.objectID;
-	inOutData.printMutex->unlock();
-
-	//start parsing
-	string title, description;
-	try{
-		title = ofxMtJsonParserUtils::initFromJsonString(jsonRef, "title_raw", true, inOutData.printMutex);
-		description = ofxMtJsonParserUtils::initFromJsonString(jsonRef, "dimensions", true, inOutData.printMutex);
-	}catch(Exception exc){ //JSON parsing can throw exceptions - catch them!
-		inOutData.printMutex->lock();
-		ofLogError("ofApp") << exc.what() << " " << exc.message() << " " << exc.displayText() << " WHILE PARSING OBJ " << inOutData.objectID;
-		inOutData.printMutex->unlock();
-	}
-
-	//filter out objects that are incomplete (ie no title) according yo your rules (MyParsingConfig)
-	if(title.size() && description.size()){
-		//make new object (must be subclass of ParsedObject) and "fill it in"
-		MyParseableObject * o = new MyParseableObject();
-		o->setTitle( title );
-		o->setDescription( description );
-		inOutData.object = o; //this is how we "return" the object to the parser;
-	}else{
-		//by not giving a valid pointer to inOutData.object, we are effectively rejecting the object in that
-		//json value... This is how you discard objects that you don't want in the final list.
-	}
-}
-
 
 void ofApp::jsonDownloaded(ofxSimpleHttpResponse & arg){
 	ofLogNotice("ofApp") << "download json ok!";
@@ -106,6 +111,9 @@ void ofApp::jsonParseFailed(){
 void ofApp::jsonContentReady(vector<ParsedObject*> & parsedObjects_){
 
 	ofLogNotice("ofApp") << "content ready!";
+
+	//This will hold your vector of parsed objects, MyParseableObject*
+	vector<MyParseableObject*> parsedObjects;
 
 	//sadly we need to cast the objects in the array to MyParseableObject* by hand
 	for(auto p : parsedObjects_){

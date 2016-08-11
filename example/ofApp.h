@@ -1,53 +1,46 @@
 #pragma once
 
 #include "ofMain.h"
-
-
 #include "ofxMtJsonParser.h"
 
-// my custom code
-#include "MyParseableObject.h"
-#include "MyParsingConfig.h"
+/////////////////////////////////////////////////////////////////
+//define a simple object Class that can holds some data
+class MyParseableObject : public ParsedObject {
+
+	public:
+		void setTitle(const string& t){ title = t;}
+		void setDescription(const string& d){ description = d;}
+		void print(){ ofLog() << "title: " << title << "  desc: " << description;}
+
+	private:
+		string title;
+		string description;
+};
+
+
+/////////////////////////////////////////////////////////////////
 
 class ofApp : public ofBaseApp{
 
-public:
+	public:
 
-	void setup();
-	void update();
-	void draw();
+		void setup();
+		void update();
+		void draw();
 
-	void keyPressed(int key){}
-	void keyReleased(int key){}
+		void keyPressed(int key){}
+		void keyReleased(int key){}
 
-	// PARSING CALLBACKS ///////////////////////////////////////////////////////////////////////////
+		// STATE CALLBACKS /////////////////////////////////////////////////////////////////////////////
 
-	//you will have to do minor parsing here, just let us know how many objects there are in
-	//the json we provide
-	void onDescribeJsonStructure(ofxMtJsonParserThread::JsonStructureData &); //minor parsing
+		void jsonDownloaded(ofxSimpleHttpResponse & arg);
+		void jsonDownloadFailed(ofxSimpleHttpResponse & arg);
+		void jsonInitialCheckOK();
+		void jsonParseFailed();
+		void jsonContentReady(vector<ParsedObject*> & arg);
 
-	//you will get N calls to this method, one per each JSON object in your json
-	//you will have to alloc and "fill in" data into a new object from the json obj we provide
-	void onParseSingleObject(ofxMtJsonParserThread::SingleObjectParseData &);
+		// APP STUFF ////////////////////////////////////////////
 
-	// STATE CALLBACKS /////////////////////////////////////////////////////////////////////////////
-
-	void jsonDownloaded(ofxSimpleHttpResponse & arg);
-	void jsonDownloadFailed(ofxSimpleHttpResponse & arg);
-	void jsonInitialCheckOK();
-	void jsonParseFailed();
-	void jsonContentReady(vector<ParsedObject*> & arg);
-
-	// APP STUFF ////////////////////////////////////////////
-
-	//ofxMtJsonParser does all the work.
-	//Create a Parser object, specifying your custom:
-	//	1 - Parsing Class: "MyJsonParserThread"
-	//	2 - Parsed Object Class: "MyParseableObject"
-	ofxMtJsonParser jsonParser;
-
-
-	//This will hold your vector of parsed objects, MyParseableObject*
-	vector<MyParseableObject*> parsedObjects;
+		ofxMtJsonParser jsonParser;
 
 };

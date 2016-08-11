@@ -18,9 +18,13 @@ ofxMtJsonParserThread::ofxMtJsonParserThread(){
 };
 
 
-void ofxMtJsonParserThread::startParsing(ofxJSONElement* json_,
+void ofxMtJsonParserThread::startParsing(	ofxJSONElement* json_,
 											ofxMtJsonParserThread::Config config_,
-										 	ofMutex * printMutex_){
+											ofMutex * printMutex_,
+										 	std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectUserLambda
+										 ){
+
+	this->parseSingleObjectUserLambda = parseSingleObjectUserLambda;
 	json = json_;
 	config = config_;
 	printMutex = printMutex_;
@@ -53,7 +57,9 @@ void ofxMtJsonParserThread::threadedFunction(){
 		arg.jsonObj = (ofxJSONElement *) &(jsonRef[i]);
 		arg.object = nullptr;
 
-		ofNotifyEvent(eventParseSingleObject, arg);
+		//ofNotifyEvent(eventParseSingleObject, arg);
+		parseSingleObjectUserLambda(arg);
+
 		if(arg.object != nullptr){
 			parsedObjects.push_back(arg.object);
 		}
