@@ -76,7 +76,7 @@ void ofxMtJsonParserThread::threadedFunction(){
 
 			if(arg.object != nullptr){
 				parsedObjects.push_back(arg.object);
-				arg.object->setObjectUUID(ofToString(c)); //we assign one unique object ID to that object
+				arg.object->setObjectUUID(arg.objectID); //we assign one unique object ID to that object
 			}
 			numParsedObjects = c - start;
 
