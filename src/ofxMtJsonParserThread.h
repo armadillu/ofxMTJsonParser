@@ -10,12 +10,9 @@
 
 #include "ofThread.h"
 #include "ofxJSON.h"
-#include "ofxMtJsonParserConfig.h"
 #include "ofxMtJsonParserUtils.h"
 
-//every parsed object will have to inherit this class
-class ParsedObject{};
-
+class ParsedObject;
 
 class ofxMtJsonParserThread: public ofThread{
 
@@ -43,7 +40,7 @@ public:
 
 	struct SingleObjectParseData{
 		int threadID;
-		int objectID;
+		string objectID;
 		ofxJSONElement * jsonObj;
 		ofMutex * printMutex;
 		ParsedObject * object; 	//its the event listener's job to allocate a new ParsedObject,
@@ -90,7 +87,6 @@ protected:
 	ofxJSONElement* json;
 	ofMutex * printMutex;
 
-	ofxMtJsonParserConfig * args;
 	Config config;
 
 	std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectUserLambda;

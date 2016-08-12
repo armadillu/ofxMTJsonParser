@@ -134,7 +134,7 @@ void ofxMtJsonParser::checkLocalJsonAndSplitWorkload(){ //this runs on a thread
 
 		}else{ //user gave us a json reference to parse
 
-			if(args.objectArray->isArray()){
+			if(args.objectArray->isArray() || args.objectArray->isObject() ){
 
 				numEntriesInJson = args.objectArray->size();
 				float numObjectsPerThread = numEntriesInJson / float(numThreads);

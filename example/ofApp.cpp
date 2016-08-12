@@ -13,6 +13,7 @@ void ofApp::setup(){
 	ofAddListener(jsonParser.eventAllObjectsParsed, this, &ofApp::jsonContentReady);
 
 	string jsonURL_CH = "http://ch-localprojects.s3.amazonaws.com/json_data/api.objects.latest.json";
+	string jsonURL_CWRU = "file://cwru.json";
 
 	//config the http downloader if you need to (proxy, etc)
 	jsonParser.getHttp().setSpeedLimit(50000); // kb/sec
@@ -69,7 +70,7 @@ void ofApp::setup(){
 		//in this example, wefilter out objects that are incomplete (ie no title)
 		if(title.size() && description.size()){
 			//make new object (must be subclass of "ParsedObject") and "fill it in"
-			MyParseableObject * o = new MyParseableObject();
+			MyParseableObject * o = new MyParseableObject();			
 			o->setTitle( title );
 			o->setDescription( description );
 			inOutData.object = o; //this is how we "return" the object to the parser;

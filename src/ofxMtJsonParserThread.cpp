@@ -8,13 +8,13 @@
 
 
 #include "ofxMtJsonParserThread.h"
-
+#include "ofxMtJsonParsedObject.h"
+#include "ofMain.h"
 
 ofxMtJsonParserThread::ofxMtJsonParserThread(){
 	numParsedObjects = 0;
 	json = NULL;
 	printMutex = NULL;
-	args = NULL;
 };
 
 
@@ -50,20 +50,41 @@ void ofxMtJsonParserThread::threadedFunction(){
 	int end = config.endIndex;
 	SingleObjectParseData arg;
 	arg.printMutex = printMutex;
-	for(int i = start; i <= end; i++){
-		const ofxJSONElement & jsonRef = *json;
-		arg.objectID = i;
-		arg.threadID = config.threadID;
-		arg.jsonObj = (ofxJSONElement *) &(jsonRef[i]);
-		arg.object = nullptr;
+	const ofxJSONElement & jsonRef = *json;
+	bool isArray = jsonRef.isArray();
+	int c = 0;
+	for( Json::ValueIterator itr = jsonRef.begin(); itr != jsonRef.end(); itr++ ) {
 
-		//ofNotifyEvent(eventParseSingleObject, arg);
-		parseSingleObjectUserLambda(arg);
+		if(c >= start && c <= end){
 
-		if(arg.object != nullptr){
-			parsedObjects.push_back(arg.object);
+			arg.threadID = config.threadID;
+			if(isArray){
+				arg.objectID = "Object_" + ofToString(c);
+				arg.jsonObj = (ofxJSONElement *) &(*itr);
+			}else{
+				arg.jsonObj = (ofxJSONElement *) &(*itr);
+				if(itr.key().isConvertibleTo(Json::stringValue)){
+					arg.objectID = itr.key().asString();
+				}else{
+					arg.objectID = ofToString(c);
+				}
+			}
+
+			arg.object = nullptr; //user is supposed to create that object
+
+			parseSingleObjectUserLambda(arg);
+
+			if(arg.object != nullptr){
+				parsedObjects.push_back(arg.object);
+				arg.object->setObjectUUID(ofToString(c)); //we assign one unique object ID to that object
+			}
+			numParsedObjects = c - start;
+
 		}
-		numParsedObjects = i - start;
+		if(c > end){
+			break;
+		}
+		c++;
 	}
 }
 
