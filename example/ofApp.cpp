@@ -12,8 +12,7 @@ void ofApp::setup(){
 	ofAddListener(jsonParser.eventJsonParseFailed, this, &ofApp::jsonParseFailed);
 	ofAddListener(jsonParser.eventAllObjectsParsed, this, &ofApp::jsonContentReady);
 
-	string jsonURL_CH = "http://ch-localprojects.s3.amazonaws.com/json_data/api.objects.latest.json";
-	string jsonURL_CWRU = "file://cwru.json";
+	string jsonURL = "http://ch-localprojects.s3.amazonaws.com/json_data/api.objects.latest.json";
 
 	//config the http downloader if you need to (proxy, etc)
 	jsonParser.getHttp().setSpeedLimit(50000); // kb/sec
@@ -84,7 +83,7 @@ void ofApp::setup(){
 
 
 	//start the download and parse process, providing your custom lambdas
-	jsonParser.downloadAndParse(jsonURL_CH, 	//json url
+	jsonParser.downloadAndParse(jsonURL, 	//json url
 								"json", 		//directory where to save the json file
 								8, 				//num threads to parse on
 								describeJsonStructureLambda,//your lambda to describe the JSON structure
