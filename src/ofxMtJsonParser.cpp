@@ -128,8 +128,8 @@ void ofxMtJsonParser::checkLocalJsonAndSplitWorkload(){ //this runs on a thread
 
 		if(args.objectArray == nullptr){ //user couldnt point us to the object array - abort!
 
-			ofLogError("ofxMtJsonParser") << "eventDescribeJsonStructure listener did not fill in required data (objectArray == NULL)!";
-			ofLogError("ofxMtJsonParser") << "You either forgot to add a listener for eventDescribeJsonStructure, or the JSON had an unexpected format";
+			ofLogError("ofxMtJsonParser") << "Did not get an object location in the JSON from the User Lambda (objectArray == NULL)!";
+			ofLogError("ofxMtJsonParser") << "You either forgot to assaing \"objectArray\" a valid value, or the JSON had an unexpected format";
 			setState(JSON_PARSE_FAILED);
 
 		}else{ //user gave us a json reference to parse
