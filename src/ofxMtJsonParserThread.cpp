@@ -44,6 +44,9 @@ void ofxMtJsonParserThread::threadedFunction(){
 		printMutex->unlock();
 	}
 	#endif
+	if(config.endIndex < 0 || config.startIndex < 0){ //no work to do for this thread!
+		return;
+	}
 	numObjectsToParse = config.endIndex - config.startIndex;
 	//parseJsonSubsetThread();
 	int start = config.startIndex;
@@ -78,7 +81,7 @@ void ofxMtJsonParserThread::threadedFunction(){
 				parsedObjects.push_back(arg.object);
 				arg.object->setObjectUUID(arg.objectID); //we assign one unique object ID to that object
 			}
-			numParsedObjects = c - start;
+			numParsedObjects = 1 + c - start;
 
 		}
 		if(c > end){
