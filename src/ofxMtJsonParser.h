@@ -111,6 +111,7 @@ protected:
 
 	vector<ParsedObject*> parsedObjects;
 	bool parsing = false;
+	bool shouldStartParsingInSubThreads; //var shared with thread
 
 };
 

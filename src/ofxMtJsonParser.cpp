@@ -95,6 +95,7 @@ void ofxMtJsonParser::downloadAndParse(string jsonURL_, string jsonDownloadDir_,
 	if(parsing){
 		ofLogError("ofxMtJsonParser") << "Can't start! Already handling another request!";
 	}
+	shouldStartParsingInSubThreads = false;
 	parsing = true;
 	describeJsonUserLambda = describeJsonFunc;
 	parseSingleObjectUserLambda = parseSingleObjectFunc;
@@ -160,7 +161,8 @@ void ofxMtJsonParser::checkLocalJsonAndSplitWorkload(){ //this runs on a thread
 					tConfig.endIndex = end;
 					threadConfigs[i] = tConfig;
 				}
-				setState(PARSING_JSON_IN_SUBTHREADS);
+				//setState(PARSING_JSON_IN_SUBTHREADS); //lets not spawn threads from the soon dying thread - seems to cause issues sometimes
+				shouldStartParsingInSubThreads = true;
 			}else{
 				ofLogError("ofxMtJsonParser") << "eventDescribeJsonStructure listener provided wrong data (objectArray IS NOT an OBJECT ARRAY!)!";
 				setState(JSON_PARSE_FAILED);
@@ -172,7 +174,6 @@ void ofxMtJsonParser::checkLocalJsonAndSplitWorkload(){ //this runs on a thread
 }
 
 
-
 void ofxMtJsonParser::startParsingInSubThreads(){
 
 	ofLogNotice("ofxMtJsonParser") << "Starting " << threads.size() << " JSON parsing threads";
@@ -181,7 +182,6 @@ void ofxMtJsonParser::startParsingInSubThreads(){
 		pjt->startParsing(jsonObjectArray, threadConfigs[i], &printMutex, parseSingleObjectUserLambda);
 	}
 }
-
 
 
 void ofxMtJsonParser::mergeThreadResults(){
@@ -199,7 +199,6 @@ void ofxMtJsonParser::mergeThreadResults(){
 }
 
 
-
 void ofxMtJsonParser::setState(State s){
 
 	state = s;
@@ -215,7 +214,11 @@ void ofxMtJsonParser::setState(State s){
 			}break;
 
 		case CHECKING_JSON:
-			startThread();
+			try{
+				startThread();
+			}catch(Exception e){
+				ofLogError("ofxMtJsonParser") << e.message();
+			}
 			break;
 
 		case JSON_PARSE_FAILED:
@@ -233,7 +236,7 @@ void ofxMtJsonParser::setState(State s){
 
 		case MERGE_THREAD_RESULTS:
 			try{
-			startThread();
+				startThread();
 			}catch(Exception e){
 				ofLogError("ofxMtJsonParser") << e.message();
 			}
@@ -253,15 +256,23 @@ void ofxMtJsonParser::setState(State s){
 }
 
 
-
 void ofxMtJsonParser::update(){
 
 	switch (state) {
 		case DOWNLOADING_JSON: http.update(); break;
-		case PARSING_JSON_IN_SUBTHREADS: updateParsing(); break;
+		case PARSING_JSON_IN_SUBTHREADS:
+			updateParsing();
+			break;
+
+		case CHECKING_JSON:
+			if(shouldStartParsingInSubThreads){
+				setState(PARSING_JSON_IN_SUBTHREADS);
+				shouldStartParsingInSubThreads = false;
+			}break;
+
 		case MERGE_THREAD_RESULTS:
 			if(!isThreadRunning()){
-				for(int i = 0; i < threads.size(); i++){
+				for(int i = 0; i < threads.size(); i++){ //delete threads that are long dead
 					delete threads[i];
 				}
 				threads.clear();
@@ -279,9 +290,11 @@ void ofxMtJsonParser::updateParsing(){
 
 	int numRunning = 0;
 	for(int i = 0; i < threads.size(); i++){
-		if(threads[i]->isThreadRunning()) numRunning++;
+		if(threads[i]->isThreadRunning()){
+			numRunning++;
+		}
 	}
-	if(numRunning == 0 && !isThreadRunning()){ //json parse finished, all theads done!
+	if(numRunning == 0){ //json parse finished, all theads done!
 		setState(MERGE_THREAD_RESULTS);
 	}
 }
@@ -318,21 +331,20 @@ void ofxMtJsonParser::threadedFunction(){
 	} catch (Poco::SystemException exc) {
 		ofLogError("ofxMtJsonParser") << exc.what() << " " << exc.message() << " " << exc.displayText();
 	}
+	#else
+	setThreadName("ofxMtJsonParser");
 	#endif
 
-	bool running = true;
-	while(running){
-		switch (state) {
-			case CHECKING_JSON:
-				checkLocalJsonAndSplitWorkload();
-				running = false;
-				break;
+	switch (state) {
+		case CHECKING_JSON:
+			checkLocalJsonAndSplitWorkload();
+			break;
 
-			case MERGE_THREAD_RESULTS:
-				mergeThreadResults();
-				running = false;
-				break;
-		}
+		case MERGE_THREAD_RESULTS:
+			mergeThreadResults();
+			break;
+
+		default: break;
 	}
 }
 
