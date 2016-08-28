@@ -89,6 +89,7 @@ void ofxMtJsonParserThread::threadedFunction(){
 		}
 		c++;
 	}
+	ofSleepMillis(16);
 }
 
 

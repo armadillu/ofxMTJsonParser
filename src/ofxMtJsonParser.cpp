@@ -338,10 +338,12 @@ void ofxMtJsonParser::threadedFunction(){
 	switch (state) {
 		case CHECKING_JSON:
 			checkLocalJsonAndSplitWorkload();
+			ofSleepMillis(16);
 			break;
 
 		case MERGE_THREAD_RESULTS:
 			mergeThreadResults();
+			ofSleepMillis(16);
 			break;
 
 		default: break;
