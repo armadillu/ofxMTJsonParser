@@ -12,21 +12,9 @@
 #include "ofxSimpleHttp.h"
 #include "ofxJSON.h"
 #include "ofxMtJsonParserThread.h"
+#include "ofxMtJsonParsedObject.h"
 #include "ofEvents.h"
 #include "ofEventUtils.h"
-
-
-//every parsed object will have to inherit from this class
-class ParsedObject{
-
-	public:
-		string	getObjectUUID(){return uuid;}
-		void	setObjectUUID(const string & uiid){ this->uuid = uiid;}
-
-	private:
-		string uuid; //must be unique!
-};
-
 
 class ofxMtJsonParser: public ofThread{
 
