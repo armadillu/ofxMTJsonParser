@@ -75,7 +75,13 @@ void ofxMtJsonParserThread::threadedFunction(){
 
 			arg.object = nullptr; //user is supposed to create that object
 
-			parseSingleObjectUserLambda(arg);
+			try{
+				parseSingleObjectUserLambda(arg);
+			}catch(exception e){
+				printMutex->lock();
+				ofLogError("ofxMtJsonParserThread") << e.what();
+				printMutex->unlock();
+			}
 
 			if(arg.object != nullptr){
 				parsedObjects.push_back(arg.object);

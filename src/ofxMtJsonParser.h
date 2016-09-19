@@ -41,6 +41,7 @@ public:
 	bool isDownloadingJson(){ return state == DOWNLOADING_JSON; }
 	bool isCheckingJson(){ return state == CHECKING_JSON; }
 	bool isParsingJson(){ return state == PARSING_JSON_IN_SUBTHREADS; }
+	string getJsonLocalPath(){return jsonAbsolutePath;}
 	ofxSimpleHttp & getHttp(){return http;} //in case you want to config it
 
 	vector<ParsedObject*> getParsedObjects(); //use only after you got the "eventDontentReady" callback
