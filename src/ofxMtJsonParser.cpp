@@ -125,7 +125,11 @@ void ofxMtJsonParser::checkLocalJsonAndSplitWorkload(){ //this runs on a thread
 		//run the user lambda!
 		ofxMtJsonParserThread::JsonStructureData args;
 		args.fullJson = json;
-		describeJsonUserLambda(args);
+		try{
+			describeJsonUserLambda(args);
+		}catch(Exception E){
+			ofLogError("ofxMtJsonParser") << E.what();
+		}
 
 		if(args.objectArray == nullptr){ //user couldnt point us to the object array - abort!
 
