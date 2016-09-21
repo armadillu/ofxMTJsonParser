@@ -61,8 +61,8 @@ ofxMtJsonParser::ofxMtJsonParser(){
 
 void ofxMtJsonParser::onJsonDownload(ofxSimpleHttpResponse & arg){
 
+	jsonAbsolutePath = arg.absolutePath;
 	if(arg.ok){
-		jsonAbsolutePath = arg.absolutePath;
 		ofLogNotice("ofxMtJsonParser") << "JSON downloaded to " << jsonAbsolutePath;
 		ofNotifyEvent(eventJsonDownloaded, arg, this);
 		setState(CHECKING_JSON);
