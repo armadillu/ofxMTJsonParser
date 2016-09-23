@@ -45,6 +45,7 @@ void ofxMtJsonParserThread::threadedFunction(){
 	}
 	#endif
 	if(config.endIndex < 0 || config.startIndex < 0){ //no work to do for this thread!
+		sleep(16); //we dont want the thread to die off too quickly as there's an issue in OF with ofThreads that die too fast
 		return;
 	}
 	numObjectsToParse = config.endIndex - config.startIndex;
@@ -95,7 +96,7 @@ void ofxMtJsonParserThread::threadedFunction(){
 		}
 		c++;
 	}
-	ofSleepMillis(16);
+	sleep(16); //TODO this is here just to workaround an ofThread issue where some exceptions get thrown when thread life is very short
 }
 
 
