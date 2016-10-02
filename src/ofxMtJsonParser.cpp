@@ -104,7 +104,7 @@ void ofxMtJsonParser::downloadAndParse(string jsonURL_, string jsonDownloadDir_,
 	numThreads = ofClamp(numThreads_, 1, INT_MAX);
 	jsonDownloadDir = jsonDownloadDir_;
 	jsonURL = jsonURL_;
-	ofLogNotice("ofxMtJsonParser") << "start download and parse of JSON '" << jsonURL << "' across " << numThreads << " threads.";
+	ofLogNotice("ofxMtJsonParser") << "Start download and parse of JSON '" << jsonURL << "' across " << numThreads << " threads.";
 	setState(DOWNLOADING_JSON);
 }
 
