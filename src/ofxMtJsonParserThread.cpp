@@ -125,7 +125,10 @@ int ofxMtJsonParserThread::getNumObjectsLeftToParse(){
 
 
 float ofxMtJsonParserThread::getPercentDone(){
-	return float(numParsedObjects) / float(numObjectsToParse);
+	if(numObjectsToParse == 0){
+		return 0.0;
+	}
+	return float(numParsedObjects - 1) / float(numObjectsToParse);
 }
 
 
