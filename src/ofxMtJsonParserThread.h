@@ -25,12 +25,12 @@ public:
 	};
 
 	// We need you to intervene in 2 places, for 2 actions to take place //////////////////////////
-	// 1 - LOCATE JSON OBJECT ARRAY /////////////////////////////////////////
+	// 1 - LOCATE JSON OBJECT ARRAY OR DICTIONARY /////////////////////////////////////////
 
 	struct JsonStructureData{
-		ofxJSONElement * fullJson; //this will provide you the full json data
-		ofxJSONElement * objectArray; 	//you are supposed to send back a ptr to the json structure that has
-		//the object array you want to parse
+		ofxJSONElement * fullJson;		//this will provide you the full json data
+		ofxJSONElement * objectArray; 	//you are supposed to send back a ptr to the json structure
+										//that has the object array you want to parse
 		JsonStructureData(){
 			objectArray = objectArray = nullptr;
 		}
@@ -44,7 +44,7 @@ public:
 		ofxJSONElement * jsonObj;
 		ofMutex * printMutex;
 		ParsedObject * object; 	//its the event listener's job to allocate a new ParsedObject,
-		//"fill it in" with data from the json, and assign it to object.
+								//"fill it in" with data from the json, and assign it to object.
 		SingleObjectParseData(){
 			printMutex = nullptr;
 			object = nullptr;
