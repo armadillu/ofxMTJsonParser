@@ -86,7 +86,8 @@ vector<ParsedObject*> ofxMtJsonParser::getParsedObjects(){
 
 void ofxMtJsonParser::downloadAndParse(string jsonURL_, string jsonDownloadDir_, int numThreads_ ,
 									   std::function<void (ofxMtJsonParserThread::JsonStructureData &)> describeJsonFunc,
-									   std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectFunc){
+									   std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectFunc,
+									   map<string,string> userData){
 
 	if(describeJsonFunc == nullptr || parseSingleObjectFunc == nullptr){
 		ofLogError("ofxMtJsonParser") << "Can't start! Please provide your parsing lambdas!";
@@ -95,10 +96,12 @@ void ofxMtJsonParser::downloadAndParse(string jsonURL_, string jsonDownloadDir_,
 	if(parsing){
 		ofLogError("ofxMtJsonParser") << "Can't start! Already handling another request!";
 	}
+
+	this->userData = userData;
 	shouldStartParsingInSubThreads = false;
 	parsing = true;
-	describeJsonUserLambda = describeJsonFunc;
-	parseSingleObjectUserLambda = parseSingleObjectFunc;
+	pointToObjects = describeJsonFunc;
+	parseOneObject = parseSingleObjectFunc;
 	numEntriesInJson = 0;
 	jsonObjectArray = json = nullptr;
 	numThreads = ofClamp(numThreads_, 1, INT_MAX);
@@ -126,7 +129,7 @@ void ofxMtJsonParser::checkLocalJsonAndSplitWorkload(){ //this runs on a thread
 		ofxMtJsonParserThread::JsonStructureData args;
 		args.fullJson = json;
 		try{
-			describeJsonUserLambda(args);
+			pointToObjects(args);
 		}catch(Exception E){
 			ofLogError("ofxMtJsonParser") << E.what();
 		}
@@ -183,7 +186,7 @@ void ofxMtJsonParser::startParsingInSubThreads(){
 	ofLogNotice("ofxMtJsonParser") << "Starting " << threads.size() << " JSON parsing threads";
 	for(int i = 0; i < threads.size(); i++){
 		ofxMtJsonParserThread * pjt = threads[i];
-		pjt->startParsing(jsonObjectArray, threadConfigs[i], &printMutex, parseSingleObjectUserLambda);
+		pjt->startParsing(jsonObjectArray, threadConfigs[i], &printMutex, parseOneObject, userData);
 	}
 }
 

@@ -26,7 +26,8 @@ public:
 						  string jsonDownloadDir_,
 						  int numThreads_,
 						  std::function<void (ofxMtJsonParserThread::JsonStructureData &)> describeJsonFunc,
-						  std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectFunc
+						  std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectFunc,
+						  map<string,string> userData = map<string,string>()
 						);
 
 	void update();
@@ -95,12 +96,12 @@ protected:
 
 	void threadedFunction();
 
-	std::function<void (ofxMtJsonParserThread::JsonStructureData &)> describeJsonUserLambda;
-	std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectUserLambda;
+	std::function<void (ofxMtJsonParserThread::JsonStructureData &)> pointToObjects;
+	std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseOneObject;
 
 	vector<ParsedObject*> parsedObjects;
 	bool parsing = false;
 	bool shouldStartParsingInSubThreads; //var shared with thread
-
+	map<string,string> userData; //holds any data the user wants to be able to get from within the thread
 };
 

@@ -45,6 +45,10 @@ public:
 		ofMutex * printMutex;
 		ParsedObject * object; 	//its the event listener's job to allocate a new ParsedObject,
 								//"fill it in" with data from the json, and assign it to object.
+		map<string,string> const * userData;//custom user data you might need inside the thread.
+											//be extra careful NOT TO WRITE into the map from the thread
+											//only read
+
 		SingleObjectParseData(){
 			printMutex = nullptr;
 			object = nullptr;
@@ -55,16 +59,13 @@ public:
 
 
 	ofxMtJsonParserThread();
-
 	
 	void startParsing(ofxJSONElement* json_,
 					  ofxMtJsonParserThread::Config config,
 					  ofMutex * printMutex_,
-					  std::function<void (SingleObjectParseData &)> parseSingleObjectUserLambda
+					  std::function<void (SingleObjectParseData &)> parseOneObject,
+					  const map<string,string>& userData
 					  );
-
-
-
 
 
 	int getNumParsedObjects();
@@ -89,7 +90,8 @@ protected:
 
 	Config config;
 
-	std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectUserLambda;
+	std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseOneObject;
+	map<string,string> userData;
 
 private:
 
