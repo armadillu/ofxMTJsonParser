@@ -18,11 +18,11 @@ ofxMtJsonParserThread::ofxMtJsonParserThread(){
 };
 
 
-void ofxMtJsonParserThread::startParsing(	ofxJSONElement* json_,
+void ofxMtJsonParserThread::startParsing(	ofxJSONElement * json_,
 											ofxMtJsonParserThread::Config config_,
 											ofMutex * printMutex_,
 										 	std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseOneObject,
-											const map<string,string> & userData
+											ofxJSONElement * userData
 										 ){
 
 	this->parseOneObject = parseOneObject;
@@ -77,7 +77,7 @@ void ofxMtJsonParserThread::threadedFunction(){
 			}
 
 			arg.object = nullptr; //user is supposed to create that object
-			arg.userData = (map<string,string> const *)&userData;
+			arg.userData = userData;
 
 			try{
 				parseOneObject(arg);

@@ -27,7 +27,7 @@ public:
 						  int numThreads_,
 						  std::function<void (ofxMtJsonParserThread::JsonStructureData &)> describeJsonFunc,
 						  std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectFunc,
-						  map<string,string> userData = map<string,string>()
+						  const ofxJSON & userData
 						);
 
 	void update();
@@ -102,6 +102,6 @@ protected:
 	vector<ParsedObject*> parsedObjects;
 	bool parsing = false;
 	bool shouldStartParsingInSubThreads; //var shared with thread
-	map<string,string> userData; //holds any data the user wants to be able to get from within the thread
+	ofxJSON userData; //holds any data the user wants to be able to get from within the thread
 };
 

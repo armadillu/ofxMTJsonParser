@@ -87,7 +87,7 @@ vector<ParsedObject*> ofxMtJsonParser::getParsedObjects(){
 void ofxMtJsonParser::downloadAndParse(string jsonURL_, string jsonDownloadDir_, int numThreads_ ,
 									   std::function<void (ofxMtJsonParserThread::JsonStructureData &)> describeJsonFunc,
 									   std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectFunc,
-									   map<string,string> userData){
+									   const ofxJSON & userData){
 
 	if(describeJsonFunc == nullptr || parseSingleObjectFunc == nullptr){
 		ofLogError("ofxMtJsonParser") << "Can't start! Please provide your parsing lambdas!";
@@ -186,7 +186,7 @@ void ofxMtJsonParser::startParsingInSubThreads(){
 	ofLogNotice("ofxMtJsonParser") << "Starting " << threads.size() << " JSON parsing threads";
 	for(int i = 0; i < threads.size(); i++){
 		ofxMtJsonParserThread * pjt = threads[i];
-		pjt->startParsing(jsonObjectArray, threadConfigs[i], &printMutex, parseOneObject, userData);
+		pjt->startParsing(jsonObjectArray, threadConfigs[i], &printMutex, parseOneObject, &userData);
 	}
 }
 
