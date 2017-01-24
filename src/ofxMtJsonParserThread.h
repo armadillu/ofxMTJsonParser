@@ -30,7 +30,7 @@ public:
 	struct JsonStructureData{
 		ofxJSONElement * fullJson;		//this will provide you the full json data
 		ofxJSONElement * objectArray; 	//you are supposed to send back a ptr to the json structure
-										//that has the object array you want to parse
+										//that has the object array OR dictionary you want to parse
 		JsonStructureData(){
 			objectArray = objectArray = nullptr;
 		}
@@ -38,7 +38,7 @@ public:
 
 	// 2 - YOUR CUSTOM PARSING HERE /////////////////////////////////////////
 
-	struct SingleObjectParseData{
+	struct SingleObjectParseData{ //data sent to the user for him/her to create a single object from json
 		int threadID;
 		string objectID;
 		ofxJSONElement * jsonObj;
