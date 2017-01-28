@@ -36,16 +36,11 @@ void ofxMtJsonParserThread::startParsing(	ofxJSONElement * json_,
 
 void ofxMtJsonParserThread::threadedFunction(){
 
-	#if( OF_VERSION_MINOR <= 9 )
-	try {
-		getPocoThread().setName("ofxMtJsonParserThread");
-	} catch (Poco::SystemException exc) {
-		printMutex->lock();
-		ofLogError("ofxMtJsonParserThread") << exc.what() << " " << exc.message()
-		<< " " << exc.displayText();
-		printMutex->unlock();
-	}
+	#ifdef TARGET_WIN32
+	#else
+	pthread_setname_np("ofxMtJsonParserThread");
 	#endif
+
 	if(config.endIndex < 0 || config.startIndex < 0){ //no work to do for this thread!
 		sleep(16); //we dont want the thread to die off too quickly as there's an issue in OF with ofThreads that die too fast
 		return;

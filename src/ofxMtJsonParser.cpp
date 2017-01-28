@@ -331,17 +331,10 @@ float ofxMtJsonParser::getTotalProgress(){
 
 void ofxMtJsonParser::threadedFunction(){
 
-	#if( OF_VERSION_MINOR <= 9 )
-	try {
-		getPocoThread().setName("ofxMtJsonParser");
-		getPocoThread().setOSPriority(Poco::Thread::getMinOSPriority());
-	} catch (Poco::SystemException exc) {
-		ofLogError("ofxMtJsonParser") << exc.what() << " " << exc.message() << " " << exc.displayText();
-	}
+	#ifdef TARGET_WIN32
 	#else
-	setThreadName("ofxMtJsonParser");
+	pthread_setname_np("ofxMtJsonParser");
 	#endif
-
 	switch (state) {
 		case CHECKING_JSON:
 			checkLocalJsonAndSplitWorkload();
