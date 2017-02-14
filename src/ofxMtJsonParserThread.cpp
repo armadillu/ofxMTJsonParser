@@ -37,6 +37,8 @@ void ofxMtJsonParserThread::startParsing(	ofxJSONElement * json_,
 void ofxMtJsonParserThread::threadedFunction(){
 
 	#ifdef TARGET_WIN32
+	#elif defined(TARGET_LINUX)
+	pthread_setname_np(pthread_self(), "ofxMtJsonParserThread");
 	#else
 	pthread_setname_np("ofxMtJsonParserThread");
 	#endif
