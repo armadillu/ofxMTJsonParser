@@ -9,7 +9,7 @@
 #ifndef BaseApp_ofxMtJsonParserUtils_h
 #define BaseApp_ofxMtJsonParserUtils_h
 
-#include "ofxJson.h"
+#include "ofxJSON.h"
 #include "ofTypes.h"
 
 #define LOCK_PRINT_MUTEX 		if(mutex) mutex->lock();
