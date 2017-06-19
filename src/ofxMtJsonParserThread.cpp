@@ -56,7 +56,7 @@ void ofxMtJsonParserThread::threadedFunction(){
 	const ofxJSONElement & jsonRef = *json;
 	bool isArray = jsonRef.isArray();
 	int c = 0;
-	for( Json::ValueIterator itr = jsonRef.begin(); itr != jsonRef.end(); itr++ ) {
+	for( auto itr = jsonRef.begin(); itr != jsonRef.end(); itr++ ) {
 
 		if(c >= start && c <= end){
 

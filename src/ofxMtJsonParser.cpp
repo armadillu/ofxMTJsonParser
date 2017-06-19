@@ -130,7 +130,7 @@ void ofxMtJsonParser::checkLocalJsonAndSplitWorkload(){ //this runs on a thread
 		args.fullJson = json;
 		try{
 			pointToObjects(args);
-		}catch(Exception E){
+		}catch(exception E){
 			ofLogError("ofxMtJsonParser") << E.what();
 		}
 
@@ -223,8 +223,8 @@ void ofxMtJsonParser::setState(State s){
 		case CHECKING_JSON:
 			try{
 				startThread();
-			}catch(Exception e){
-				ofLogError("ofxMtJsonParser") << e.message();
+			}catch(exception e){
+				ofLogError("ofxMtJsonParser") << e.what();
 			}
 			break;
 
@@ -244,8 +244,8 @@ void ofxMtJsonParser::setState(State s){
 		case MERGE_THREAD_RESULTS:
 			try{
 				startThread();
-			}catch(Exception e){
-				ofLogError("ofxMtJsonParser") << e.message();
+			}catch(exception e){
+				ofLogError("ofxMtJsonParser") << e.what();
 			}
 			break;
 
