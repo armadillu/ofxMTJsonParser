@@ -48,9 +48,9 @@ public:
 				title = ofxMtJsonParserUtils::initFromJsonString(jsonRef[i], "title_raw", true, printMutex);
 				description = ofxMtJsonParserUtils::initFromJsonString(jsonRef[i], "dimensions", true, printMutex);
 
-			}catch(Exception exc){ //JSON parsing can throw exceptions
+			}catch(exception exc){ //JSON parsing can throw exceptions
 				printMutex->lock();
-				ofLogError("MyJsonParserThread") << exc.what() << " " << exc.message() << " " << exc.displayText() << " WHILE PARSING OBJ " << i;
+				ofLogError("MyJsonParserThread") << exc.what() << " WHILE PARSING OBJ " << i;
 				printMutex->unlock();
 			}
 

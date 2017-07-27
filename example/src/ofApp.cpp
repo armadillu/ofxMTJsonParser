@@ -60,9 +60,9 @@ void ofApp::setup(){
 		try{ //do some parsing - catching exceptions
 			title = ofxMtJsonParserUtils::initFromJsonString(jsonRef, "title_raw", false, inOutData.printMutex);
 			description = ofxMtJsonParserUtils::initFromJsonString(jsonRef, "dimensions", false, inOutData.printMutex);
-		}catch(Exception exc){
+		}catch(exception exc){
 			inOutData.printMutex->lock();
-			ofLogError("ofApp") << exc.what() << " " << exc.message() << " " << exc.displayText() << " WHILE PARSING OBJ " << inOutData.objectID;
+			ofLogError("ofApp") << exc.what() << " " << " WHILE PARSING OBJ " << inOutData.objectID;
 			inOutData.printMutex->unlock();
 		}
 
@@ -82,12 +82,14 @@ void ofApp::setup(){
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+	ofxJSON userData;
 	//start the download and parse process, providing your custom lambdas
 	jsonParser.downloadAndParse(jsonURL, 	//json url
 								"json", 		//directory where to save the json file
 								8, 				//num threads to parse on
 								describeJsonStructureLambda,//your lambda to describe the JSON structure
-								parseSingleObjectLambda		//your lambda to parse each of the objects in the JSON
+								parseSingleObjectLambda,	//your lambda to parse each of the objects in the JSON
+								userData					//pass any data you require to each individual parser
 								);
 }
 
