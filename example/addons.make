@@ -1,0 +1,3 @@
+ofxPoco
+ofxJSON
+ofxSimpleHttp
