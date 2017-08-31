@@ -40,7 +40,7 @@ public:
 
 	struct SingleObjectParseData{ //data sent to the user for him/her to create a single object from json
 		int threadID;
-		string objectID;
+		std::string objectID;
 		ofxJSONElement * jsonObj;
 		ofMutex * printMutex;
 		ParsedObject * object; 	//its the event listener's job to allocate a new ParsedObject,
@@ -73,12 +73,12 @@ public:
 	float getPercentDone();
 
 	//only call when Thread is finished, or you will get crashes
-	vector<ParsedObject*> getParsedObjects(){return parsedObjects;}
+	std::vector<ParsedObject*> getParsedObjects(){return parsedObjects;}
 
 protected:
 
 	// SUBCLASS SHOULD STORE LIST OF PARSED OBJECTS HERE ///////////////
-	vector<ParsedObject*> parsedObjects;
+	std::vector<ParsedObject*> parsedObjects;
 
 	// SUBCLASS SHOULD UPDATE THIS AS IT PARSES ///////////////////////
 	int numParsedObjects;

@@ -20,9 +20,9 @@ class ofxMtJsonParserUtils{
 
 public:
 
-	static inline string initFromJsonString(const ofxJSONElement& json, const string& key, bool verbose, ofMutex * mutex = NULL){
+	static inline std::string initFromJsonString(const ofxJSONElement& json, const std::string& key, bool verbose, ofMutex * mutex = NULL){
 		if(json[key].isString()) {
-			string ret = json[key].asString();
+			std::string ret = json[key].asString();
 			if(verbose){
 				LOCK_PRINT_MUTEX
 				ofLogNotice("ofxMtJsonParserUtils") << key << " = " << ret;
@@ -36,7 +36,7 @@ public:
 		return "";
 	}
 
-	static inline int initFromJsonInt(const ofxJSONElement& json, const string& key, bool verbose, ofMutex * mutex = NULL){
+	static inline int initFromJsonInt(const ofxJSONElement& json, const std::string& key, bool verbose, ofMutex * mutex = NULL){
 		if(!json[key].isNull()) {
 			int v = json[key].asInt();
 			if(verbose){
@@ -52,7 +52,7 @@ public:
 		return 0;
 	}
 
-	static inline float initFromJsonFloat(const ofxJSONElement& json, const string& key, bool verbose, ofMutex * mutex = NULL){
+	static inline float initFromJsonFloat(const ofxJSONElement& json, const std::string& key, bool verbose, ofMutex * mutex = NULL){
 		if(!json[key].isNull()) {
 			float f = json[key].asFloat();
 			if(verbose){
@@ -68,7 +68,7 @@ public:
 		return 0.0f;
 	}
 
-	static inline bool initFromJsonBool(const ofxJSONElement& json, const string& key, bool verbose, ofMutex * mutex = NULL){
+	static inline bool initFromJsonBool(const ofxJSONElement& json, const std::string& key, bool verbose, ofMutex * mutex = NULL){
 
 		if(json.isMember(key)) {
 			bool b = json[key].asBool();

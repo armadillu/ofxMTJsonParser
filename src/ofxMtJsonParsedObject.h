@@ -12,10 +12,10 @@
 class ParsedObject{
 
 	public:
-		string getObjectUUID(){return uuid;}
-		void setObjectUUID(const string & uiid){ this->uuid = uiid;}
+		std::string getObjectUUID(){return uuid;}
+		void setObjectUUID(const std::string & uiid){ this->uuid = uiid;}
 
 	private:
-		string uuid; //must be unique!
+		std::string uuid; //must be unique!
 };
 
