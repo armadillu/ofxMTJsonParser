@@ -74,7 +74,6 @@ void ofxMtJsonParser::onJsonDownload(ofxSimpleHttpResponse & arg){
 }
 
 
-
 vector<ParsedObject*> ofxMtJsonParser::getParsedObjects(){
 	if (state == FINISHED){
 		return parsedObjects;
@@ -114,11 +113,10 @@ void ofxMtJsonParser::downloadAndParse(string jsonURL_, string jsonDownloadDir_,
 
 void ofxMtJsonParser::checkLocalJsonAndSplitWorkload(){ //this runs on a thread
 
-	bool ok = true;
 	json = new ofxJSONElement();
 	bool parsingSuccessful;
 	ofLogNotice("ofxMtJsonParser") << "Checking JSON...";
-	parsingSuccessful = json->open(jsonAbsolutePath);
+	parsingSuccessful = json->openLocal(jsonAbsolutePath);
 
 	if(parsingSuccessful){
 
@@ -255,6 +253,7 @@ void ofxMtJsonParser::setState(State s){
 			delete json;
 			json = jsonObjectArray = nullptr;
 			ofNotifyEvent(eventAllObjectsParsed, parsedObjects, this);
+			parsedObjects.clear();
 			parsing = false;
 			}break;
 
@@ -292,7 +291,6 @@ void ofxMtJsonParser::update(){
 }
 
 
-
 void ofxMtJsonParser::updateParsing(){
 
 	int numRunning = 0;
@@ -305,7 +303,6 @@ void ofxMtJsonParser::updateParsing(){
 		setState(MERGE_THREAD_RESULTS);
 	}
 }
-
 
 
 vector<float> ofxMtJsonParser::getPerThreadProgress(){
@@ -328,7 +325,6 @@ float ofxMtJsonParser::getTotalProgress(){
 }
 
 
-
 void ofxMtJsonParser::threadedFunction(){
 
 	#ifdef TARGET_WIN32
@@ -340,15 +336,14 @@ void ofxMtJsonParser::threadedFunction(){
 	switch (state) {
 		case CHECKING_JSON:
 			checkLocalJsonAndSplitWorkload();
-			ofSleepMillis(16);
 			break;
 
 		case MERGE_THREAD_RESULTS:
 			mergeThreadResults();
-			ofSleepMillis(16);
 			break;
 
 		default: break;
 	}
+	ofSleepMillis(16);
 }
 

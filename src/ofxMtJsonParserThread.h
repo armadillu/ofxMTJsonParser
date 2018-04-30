@@ -28,12 +28,9 @@ public:
 	// 1 - LOCATE JSON OBJECT ARRAY OR DICTIONARY /////////////////////////////////////////
 
 	struct JsonStructureData{
-		ofxJSONElement * fullJson;		//this will provide you the full json data
-		ofxJSONElement * objectArray; 	//you are supposed to send back a ptr to the json structure
-										//that has the object array OR dictionary you want to parse
-		JsonStructureData(){
-			objectArray = objectArray = nullptr;
-		}
+		ofxJSONElement * fullJson = nullptr;	//this will provide you the full json data
+		ofxJSONElement * objectArray = nullptr;	//you are supposed to send back a ptr to the json structure
+												//that has the object array OR dictionary you want to parse
 	};
 
 	// 2 - YOUR CUSTOM PARSING HERE /////////////////////////////////////////
@@ -42,16 +39,15 @@ public:
 		int threadID;
 		std::string objectID;
 		ofxJSONElement * jsonObj;
-		ofMutex * printMutex;
-		ParsedObject * object; 	//its the event listener's job to allocate a new ParsedObject,
-								//"fill it in" with data from the json, and assign it to object.
-		ofxJSONElement * userData;//custom user data you might need inside the thread.
-											//be extra careful NOT TO WRITE into it from the thread!
-											//READ ONLY!
-		SingleObjectParseData(){
-			printMutex = nullptr;
-			object = nullptr;
-		}
+		ofMutex * printMutex = nullptr;
+		ParsedObject * object = nullptr;
+		//its the event listener's job to allocate a new ParsedObject,
+		//"fill it in" with data from the json, and assign it to object.
+
+		ofxJSONElement * userData;
+		//custom user data you might need inside the thread.
+		//be extra careful NOT TO WRITE into it from the thread!
+		//READ ONLY!
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
