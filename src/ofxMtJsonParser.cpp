@@ -191,7 +191,7 @@ void ofxMtJsonParser::startParsingInSubThreads(){
 
 void ofxMtJsonParser::mergeThreadResults(){
 
-	ofLogNotice("ofxMtJsonParser") << "Merging Thread Parsing results";
+	//ofLogNotice("ofxMtJsonParser") << "Merging Thread Parsing results";
 	if (parsedObjects.size()){
 		ofLogError("ofxMtJsonParser") << "parsed object list not empty?";
 	}
