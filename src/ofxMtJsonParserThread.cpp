@@ -96,7 +96,7 @@ void ofxMtJsonParserThread::threadedFunction(){
 		}
 		c++;
 	}
-	sleep(16); //TODO this is here just to workaround an ofThread issue where some exceptions get thrown when thread life is very short
+	sleep(16); //FIXME: this is here just to workaround an ofThread issue where some exceptions get thrown when thread life is very short
 }
 
 
