@@ -57,7 +57,7 @@ float ofxMtJsonParserUtils::initFromJsonFloat(const ofxJSONElement& json, const 
 		return f;
 	}
 	LOCK_PRINT_MUTEX
-	ofLogError("ofxMtJsonParserUtils") << "Can't initFromJsonInt '" << key << "'" ;
+	ofLogError("ofxMtJsonParserUtils") << "Can't initFromJsonFloat '" << key << "'" ;
 	UNLOCK_PRINT_MUTEX
 	return defaultVal;
 }
@@ -75,7 +75,7 @@ bool ofxMtJsonParserUtils::initFromJsonBool(const ofxJSONElement& json, const st
 		return b;
 	}
 	LOCK_PRINT_MUTEX
-	ofLogError("ofxMtJsonParserUtils") << "Can't initFromJsonInt '" << key << "'" ;
+	ofLogError("ofxMtJsonParserUtils") << "Can't initFromJsonBool '" << key << "'" ;
 	UNLOCK_PRINT_MUTEX
 	return defaultVal;
 }
