@@ -22,13 +22,19 @@ public:
 
 	ofxMtJsonParser();
 
-	void downloadAndParse(string jsonURL_,
-						  string jsonDownloadDir_,
-						  int numThreads_,
-						  std::function<void (ofxMtJsonParserThread::JsonStructureData &)> describeJsonFunc,
-						  std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectFunc,
-						  const ofxJSON & userData
-						);
+	void setupAndStartDownload(	string jsonURL_,
+							   	string jsonDownloadDir_,
+			  					int numThreads_,
+								std::function<void (ofxMtJsonParserThread::JsonStructureData &)> describeJsonFunc,
+								std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectFunc,
+								const ofxJSON & userData);
+
+	void setHoldAfterDownload(bool hold); //set to true if you want the addon to just download and not parse on its own
+										//you can check if the download is finished by calling isDownloadReady().
+										//once ready, you must call startParsing() to carry on parsing
+										//if false, addon will download and inmediatelly parse
+	bool isDownloadReady(){return downloadReady;}
+	bool startParsing();
 
 	void update();
 
@@ -93,6 +99,7 @@ protected:
 	void mergeThreadResults();
 
 	void onJsonDownload(ofxSimpleHttpResponse & arg);
+	void processDownload(ofxSimpleHttpResponse & arg);
 
 	void threadedFunction();
 
@@ -103,5 +110,11 @@ protected:
 	bool parsing = false;
 	bool shouldStartParsingInSubThreads; //var shared with thread
 	ofxJSON userData; //holds any data the user wants to be able to get from within the thread
+
+	//these are used to break up the download + parse cycle
+	bool shouldHoldAfterDownload = false; //if false, use the old strategy where parsing begins as soon as donwload ends (automatically)
+	//if true, user will need to explicitly call startParsing(); once download is finished
+	ofxSimpleHttpResponse downloadResponse;
+	bool downloadReady = false;
 };
 

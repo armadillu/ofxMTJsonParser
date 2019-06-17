@@ -61,6 +61,15 @@ ofxMtJsonParser::ofxMtJsonParser(){
 
 void ofxMtJsonParser::onJsonDownload(ofxSimpleHttpResponse & arg){
 
+	if(shouldHoldAfterDownload){
+		downloadResponse = arg;
+		downloadReady = true;
+	}else{
+		processDownload(arg);
+	}
+}
+
+void ofxMtJsonParser::processDownload(ofxSimpleHttpResponse & arg){
 	jsonAbsolutePath = arg.absolutePath;
 	if(arg.ok){
 		ofLogNotice("ofxMtJsonParser") << "JSON downloaded to " << jsonAbsolutePath;
@@ -73,7 +82,6 @@ void ofxMtJsonParser::onJsonDownload(ofxSimpleHttpResponse & arg){
 	}
 }
 
-
 vector<ParsedObject*> ofxMtJsonParser::getParsedObjects(){
 	if (state == FINISHED){
 		return parsedObjects;
@@ -82,11 +90,24 @@ vector<ParsedObject*> ofxMtJsonParser::getParsedObjects(){
 	return empty;
 }
 
+bool ofxMtJsonParser::startParsing(){
+	if(shouldHoldAfterDownload && downloadReady && state == DOWNLOADING_JSON){
+		processDownload(downloadResponse);
+		return true;
+	}else{
+		ofLogError("ofxMtJsonParser") << "Can only startParsing() if setHoldAfterDownload(true) && isDownloadReady() == true!";
+	}
+	return false;
+}
 
-void ofxMtJsonParser::downloadAndParse(string jsonURL_, string jsonDownloadDir_, int numThreads_ ,
-									   std::function<void (ofxMtJsonParserThread::JsonStructureData &)> describeJsonFunc,
-									   std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectFunc,
-									   const ofxJSON & userData){
+void ofxMtJsonParser::setHoldAfterDownload(bool hold){
+	shouldHoldAfterDownload = hold;
+}
+
+void ofxMtJsonParser::setupAndStartDownload(	string jsonURL_, string jsonDownloadDir_, int numThreads_ ,
+						   					std::function<void (ofxMtJsonParserThread::JsonStructureData &)> describeJsonFunc,
+						   					std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectFunc,
+						   					const ofxJSON & userData){
 
 	if(describeJsonFunc == nullptr || parseSingleObjectFunc == nullptr){
 		ofLogError("ofxMtJsonParser") << "Can't start! Please provide your parsing lambdas!";
@@ -96,6 +117,7 @@ void ofxMtJsonParser::downloadAndParse(string jsonURL_, string jsonDownloadDir_,
 		ofLogError("ofxMtJsonParser") << "Can't start! Already handling another request!";
 	}
 
+	isDownloadReady = false;
 	this->userData = userData;
 	shouldStartParsingInSubThreads = false;
 	parsing = true;
