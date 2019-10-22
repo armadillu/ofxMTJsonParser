@@ -299,7 +299,7 @@ void ofxMtJsonParser::updateParsing(){
 			numRunning++;
 		}
 	}
-	if(numRunning == 0){ //json parse finished, all theads done!
+	if(numRunning == 0 && !isThreadRunning()){ //json parse finished, all theads done!
 		setState(MERGE_THREAD_RESULTS);
 	}
 }
