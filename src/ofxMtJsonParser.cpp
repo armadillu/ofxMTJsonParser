@@ -34,7 +34,8 @@ string ofxMtJsonParser::getDrawableState(){
 			msg += "\n\n";
 			vector<float> progress = getPerThreadProgress();
 			for(int i = 0; i < progress.size(); i++){
-				msg += "  Thread (" + ofToString(i) + ") : " + ofToString(100 * progress[i], 1) +
+				char aux[4]; sprintf(aux, "%02d", i);
+				msg += "  Thread (" + string(aux) + ") : " + ofToString(100 * progress[i], 1) +
 				"% parsed. (" + ofToString((int)threads[i]->getNumParsedObjects()) + " object out of " +
 				ofToString((int)threads[i]->getNumObjectsToParse()) + " parsed)\n";
 			}
