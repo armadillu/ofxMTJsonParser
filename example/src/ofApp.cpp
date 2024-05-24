@@ -12,10 +12,11 @@ void ofApp::setup(){
 	ofAddListener(jsonParser.eventJsonParseFailed, this, &ofApp::jsonParseFailed);
 	ofAddListener(jsonParser.eventAllObjectsParsed, this, &ofApp::jsonContentReady);
 
-	string jsonURL = "http://ch-localprojects.s3.amazonaws.com/json_data/api.objects.latest.json";
+	string jsonURL = "file://api.objects.latest.json";
+	//jsonURL = "http://ch-localprojects.s3.amazonaws.com/json_data/api.objects.latest.json"
 
 	//config the http downloader if you need to (proxy, etc)
-	jsonParser.getHttp().setSpeedLimit(50000); // kb/sec
+	//jsonParser.getHttp().setSpeedLimit(50000); // kb/sec
 
 	// LAMBDA DEFINITIONS /////////////////////////////////////////////////////////////////////////////////////
 
@@ -60,7 +61,7 @@ void ofApp::setup(){
 		try{ //do some parsing - catching exceptions
 			title = ofxMtJsonParserUtils::initFromJsonString(jsonRef, "title_raw", false, inOutData.printMutex);
 			description = ofxMtJsonParserUtils::initFromJsonString(jsonRef, "dimensions", false, inOutData.printMutex);
-		}catch(exception exc){
+		}catch(std::exception exc){
 			inOutData.printMutex->lock();
 			ofLogError("ofApp") << exc.what() << " " << " WHILE PARSING OBJ " << inOutData.objectID;
 			inOutData.printMutex->unlock();

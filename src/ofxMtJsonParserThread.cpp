@@ -78,7 +78,7 @@ void ofxMtJsonParserThread::threadedFunction(){
 
 			try{
 				parseOneObject(arg);
-			}catch(exception e){
+			}catch(std::exception e){
 				printMutex->lock();
 				ofLogError("ofxMtJsonParserThread") << e.what();
 				printMutex->unlock();
