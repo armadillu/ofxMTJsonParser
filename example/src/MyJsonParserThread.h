@@ -11,7 +11,6 @@
 
 
 #include "ofxMtJsonParser.h"
-#include "ofxJSON.h"
 #include "MyParseableObject.h"
 #include "MyParsingConfig.h"
 

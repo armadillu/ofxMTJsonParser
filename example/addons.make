@@ -1,4 +1,3 @@
 ofxPoco
-ofxJSON
 ofxSimpleHttp
 ofxMTJsonParser
