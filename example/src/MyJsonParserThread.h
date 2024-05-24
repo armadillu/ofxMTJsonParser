@@ -21,7 +21,7 @@ public:
 
 	void parseJsonSubsetThread(){
 
-		const ofxJSONElement & jsonRef = *json; //pointers mess up the json syntax somehow
+		const ofJson & jsonRef = *json; //pointers mess up the json syntax somehow
 
 		//both included
 		int start = config.startIndex;
@@ -83,12 +83,12 @@ public:
 	}
 
 
-	int getNumEntriesInJson(ofxJSONElement* json_){
+	int getNumEntriesInJson(ofJson* json_){
 
-		const ofxJSONElement & jsonRef = *json_; //pointers mess up the json syntax somehow
+		const ofJson & jsonRef = *json_; //pointers mess up the json syntax somehow
 
 		//CH JSON
-		if(jsonRef.isArray()){
+		if(jsonRef.is_array()){
 			return jsonRef.size();
 		}
 

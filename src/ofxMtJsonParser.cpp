@@ -53,7 +53,8 @@ string ofxMtJsonParser::getDrawableState(){
 
 ofxMtJsonParser::ofxMtJsonParser(){
 	state = IDLE;
-	json = jsonObjectArray = nullptr;
+	jsonObjArray = nullptr;
+	json = ofJson();
 	numEntriesInJson = numThreads = 0;
 	ofAddListener(http.httpResponse, this, &ofxMtJsonParser::onJsonDownload);
 	http.setNeedsChecksumMatchToSkipDownload(true);
@@ -87,7 +88,7 @@ vector<ParsedObject*> ofxMtJsonParser::getParsedObjects(){
 void ofxMtJsonParser::downloadAndParse(string jsonURL_, string jsonDownloadDir_, int numThreads_ ,
 									   std::function<void (ofxMtJsonParserThread::JsonStructureData &)> describeJsonFunc,
 									   std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectFunc,
-									   const ofxJSON & userData){
+									   const ofJson & userData){
 
 	if(describeJsonFunc == nullptr || parseSingleObjectFunc == nullptr){
 		ofLogError("ofxMtJsonParser") << "Can't start! Please provide your parsing lambdas!";
@@ -103,7 +104,8 @@ void ofxMtJsonParser::downloadAndParse(string jsonURL_, string jsonDownloadDir_,
 	pointToObjects = describeJsonFunc;
 	parseOneObject = parseSingleObjectFunc;
 	numEntriesInJson = 0;
-	jsonObjectArray = json = nullptr;
+	jsonObjArray = nullptr;
+	json = ofJson();
 	numThreads = ofClamp(numThreads_, 1, INT_MAX);
 	jsonDownloadDir = jsonDownloadDir_;
 	jsonURL = jsonURL_;
@@ -114,10 +116,11 @@ void ofxMtJsonParser::downloadAndParse(string jsonURL_, string jsonDownloadDir_,
 
 void ofxMtJsonParser::checkLocalJsonAndSplitWorkload(){ //this runs on a thread
 
-	json = new ofxJSONElement();
 	bool parsingSuccessful;
 	ofLogNotice("ofxMtJsonParser") << "Checking JSON...";
-	parsingSuccessful = json->openLocal(jsonAbsolutePath);
+	parsingSuccessful = false;
+	json = ofLoadJson(jsonAbsolutePath);
+	parsingSuccessful = !json.is_null();
 
 	if(parsingSuccessful){
 
@@ -126,7 +129,7 @@ void ofxMtJsonParser::checkLocalJsonAndSplitWorkload(){ //this runs on a thread
 
 		//run the user lambda!
 		ofxMtJsonParserThread::JsonStructureData args;
-		args.fullJson = json;
+		args.fullJson = &json;
 		try{
 			pointToObjects(args);
 		}catch(std::exception E){
@@ -141,11 +144,11 @@ void ofxMtJsonParser::checkLocalJsonAndSplitWorkload(){ //this runs on a thread
 
 		}else{ //user gave us a json reference to parse
 
-			if(args.objectArray->isArray() || args.objectArray->isObject() ){
+			if(args.objectArray->is_array() || args.objectArray->is_object() ){
 
 				numEntriesInJson = args.objectArray->size();
 				float numObjectsPerThread = numEntriesInJson / float(numThreads);
-				jsonObjectArray = args.objectArray; //store a ptr to that json obj array structure
+				jsonObjArray = args.objectArray; //store a ptr to that json obj array structure
 				threadConfigs.resize(numThreads);
 
 				for(int i = 0; i < numThreads; i++){
@@ -185,7 +188,7 @@ void ofxMtJsonParser::startParsingInSubThreads(){
 	ofLogNotice("ofxMtJsonParser") << "Starting " << threads.size() << " JSON parsing threads";
 	for(int i = 0; i < threads.size(); i++){
 		ofxMtJsonParserThread * pjt = threads[i];
-		pjt->startParsing(jsonObjectArray, threadConfigs[i], &printMutex, parseOneObject, &userData);
+		pjt->startParsing(jsonObjArray, threadConfigs[i], &printMutex, parseOneObject, &userData);
 	}
 }
 
@@ -231,7 +234,6 @@ void ofxMtJsonParser::setState(State s){
 			stopThread();
 			ofNotifyEvent(eventJsonParseFailed, this);
 			ofLogError("ofxMtJsonParser")<< "JSON PARSE FAILED! " << jsonAbsolutePath;
-			delete json;
 			json = nullptr;
 			parsing = false;
 			break;
@@ -250,9 +252,9 @@ void ofxMtJsonParser::setState(State s){
 
 		case FINISHED:{
 			ofLogNotice("ofxMtJsonParser") << "Finished parsing '" << jsonAbsolutePath << "'";
-			ofLogNotice("ofxMtJsonParser") << parsedObjects.size() << " objects delivered, " << jsonObjectArray->size() - parsedObjects.size() << " objects rejected by the user.";
-			delete json;
-			json = jsonObjectArray = nullptr;
+			ofLogNotice("ofxMtJsonParser") << parsedObjects.size() << " objects delivered, " << jsonObjArray->size() - parsedObjects.size() << " objects rejected by the user.";
+			jsonObjArray = nullptr;
+			json = ofJson();
 			ofNotifyEvent(eventAllObjectsParsed, parsedObjects, this);
 			parsedObjects.clear();
 			parsing = false;
@@ -345,6 +347,6 @@ void ofxMtJsonParser::threadedFunction(){
 
 		default: break;
 	}
-	ofSleepMillis(16);
+	ofSleepMillis(5);
 }
 

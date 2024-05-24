@@ -12,15 +12,16 @@
 #define UNLOCK_PRINT_MUTEX		if(mutex) mutex->unlock();
 
 
-std::string ofxMtJsonParserUtils::initFromJsonString(const ofxJSONElement& json, const std::string& key, bool verbose, ofMutex * mutex, std::string defaultVal){
-	if(json[key].isString()) {
-		std::string ret = json[key].asString();
+const std::string & ofxMtJsonParserUtils::initFromJsonString(const ofJson& json, const std::string& key, 
+															 bool verbose, ofMutex * mutex, const std::string & defaultVal){
+	if(json.contains(key) && json[key].is_string()) {
+		const string & data = json[key].get_ref<const std::string&>();
 		if(verbose){
 			LOCK_PRINT_MUTEX
-			ofLogNotice("ofxMtJsonParserUtils") << key << " = " << ret;
+			ofLogNotice("ofxMtJsonParserUtils") << key << " = " << data;
 			UNLOCK_PRINT_MUTEX
 		}
-		return ret;
+		return data;
 	}
 	LOCK_PRINT_MUTEX
 	ofLogError("ofxMtJsonParserUtils") << "Can't initFromJsonString '" << key << "'" ;
@@ -29,9 +30,10 @@ std::string ofxMtJsonParserUtils::initFromJsonString(const ofxJSONElement& json,
 }
 
 
-int ofxMtJsonParserUtils::initFromJsonInt(const ofxJSONElement& json, const std::string& key, bool verbose, ofMutex * mutex, int defaultVal){
-	if(!json[key].isNull()) {
-		int v = json[key].asInt();
+int ofxMtJsonParserUtils::initFromJsonInt(const ofJson& json, const std::string& key, bool verbose, 
+										  ofMutex * mutex, int defaultVal){
+	if(json.contains(key) && json[key].is_number()) {
+		int v = json[key];
 		if(verbose){
 			LOCK_PRINT_MUTEX
 			ofLogNotice("ofxMtJsonParserUtils") << key << " = " << v;
@@ -46,9 +48,10 @@ int ofxMtJsonParserUtils::initFromJsonInt(const ofxJSONElement& json, const std:
 }
 
 
-float ofxMtJsonParserUtils::initFromJsonFloat(const ofxJSONElement& json, const std::string& key, bool verbose, ofMutex * mutex, float defaultVal){
-	if(!json[key].isNull()) {
-		float f = json[key].asFloat();
+float ofxMtJsonParserUtils::initFromJsonFloat(const ofJson& json, const std::string& key, bool verbose, 
+											  ofMutex * mutex, float defaultVal){
+	if(json.contains(key) && json[key].is_number()) {
+		float f = json[key];
 		if(verbose){
 			LOCK_PRINT_MUTEX
 			ofLogNotice("ofxMtJsonParserUtils") << key << " = " << f;
@@ -63,10 +66,11 @@ float ofxMtJsonParserUtils::initFromJsonFloat(const ofxJSONElement& json, const 
 }
 
 
-bool ofxMtJsonParserUtils::initFromJsonBool(const ofxJSONElement& json, const std::string& key, bool verbose, ofMutex * mutex, bool defaultVal){
+bool ofxMtJsonParserUtils::initFromJsonBool(const ofJson& json, const std::string& key, bool verbose, 
+											ofMutex * mutex, bool defaultVal){
 
-	if(json.isMember(key)) {
-		bool b = json[key].asBool();
+	if(json.contains(key) && json.is_boolean() ){
+		bool b = json[key];
 		if(verbose){
 			LOCK_PRINT_MUTEX
 			ofLogNotice("ofxMtJsonParserUtils") << key << " = " << b;

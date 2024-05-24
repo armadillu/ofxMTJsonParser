@@ -8,9 +8,8 @@
 
 #pragma once
 
+#include "ofMain.h"
 #include "ofThread.h"
-#include "ofxJSON.h"
-#include "ofxMtJsonParserUtils.h"
 
 class ParsedObject;
 
@@ -28,8 +27,8 @@ public:
 	// 1 - LOCATE JSON OBJECT ARRAY OR DICTIONARY /////////////////////////////////////////
 
 	struct JsonStructureData{
-		ofxJSONElement * fullJson = nullptr;	//this will provide you the full json data
-		ofxJSONElement * objectArray = nullptr;	//you are supposed to send back a ptr to the json structure
+		ofJson * fullJson = nullptr;	//this will provide you the full json data
+		ofJson * objectArray = nullptr;	//you are supposed to send back a ptr to the json structure
 												//that has the object array OR dictionary you want to parse
 	};
 
@@ -38,13 +37,13 @@ public:
 	struct SingleObjectParseData{ //data sent to the user for him/her to create a single object from json
 		int threadID;
 		std::string objectID;
-		ofxJSONElement * jsonObj;
+		ofJson * jsonObj = nullptr;
 		ofMutex * printMutex = nullptr;
 		ParsedObject * object = nullptr;
 		//its the event listener's job to allocate a new ParsedObject,
 		//"fill it in" with data from the json, and assign it to object.
 
-		ofxJSONElement * userData;
+		ofJson * userData = nullptr;
 		//custom user data you might need inside the thread.
 		//be extra careful NOT TO WRITE into it from the thread!
 		//READ ONLY!
@@ -55,11 +54,11 @@ public:
 
 	ofxMtJsonParserThread();
 	
-	void startParsing(ofxJSONElement* json_,
+	void startParsing(ofJson * json_,
 					  ofxMtJsonParserThread::Config config,
 					  ofMutex * printMutex_,
 					  std::function<void (SingleObjectParseData &)> parseOneObject,
-					  ofxJSONElement * userData
+					  ofJson * userData
 					  );
 
 
@@ -80,13 +79,13 @@ protected:
 	int numParsedObjects;
 
 	// TO BE USED BY SUBCLASS ////////////////////////////////////////
-	ofxJSONElement* json;
+	ofJson* json = nullptr;
 	ofMutex * printMutex;
 
 	Config config;
 
 	std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseOneObject;
-	ofxJSONElement * userData;
+	ofJson * userData = nullptr;
 
 private:
 

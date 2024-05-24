@@ -9,6 +9,7 @@
 
 #include "ofxMtJsonParserThread.h"
 #include "ofxMtJsonParsedObject.h"
+#include "ofxMtJsonParserUtils.h"
 #include "ofMain.h"
 
 ofxMtJsonParserThread::ofxMtJsonParserThread(){
@@ -18,11 +19,11 @@ ofxMtJsonParserThread::ofxMtJsonParserThread(){
 };
 
 
-void ofxMtJsonParserThread::startParsing(	ofxJSONElement * json_,
+void ofxMtJsonParserThread::startParsing(	ofJson * json_,
 											ofxMtJsonParserThread::Config config_,
 											ofMutex * printMutex_,
 										 	std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseOneObject,
-											ofxJSONElement * userData
+											ofJson * userData
 										 ){
 
 	this->parseOneObject = parseOneObject;
@@ -44,7 +45,7 @@ void ofxMtJsonParserThread::threadedFunction(){
 	#endif
 
 	if(config.endIndex < 0 || config.startIndex < 0){ //no work to do for this thread!
-		sleep(16); //we dont want the thread to die off too quickly as there's an issue in OF with ofThreads that die too fast
+		ofSleepMillis(5); //we dont want the thread to die off too quickly as there's an issue in OF with ofThreads that die too fast
 		return;
 	}
 	numObjectsToParse = config.endIndex - config.startIndex;
@@ -53,24 +54,20 @@ void ofxMtJsonParserThread::threadedFunction(){
 	int end = config.endIndex;
 	SingleObjectParseData arg;
 	arg.printMutex = printMutex;
-	const ofxJSONElement & jsonRef = *json;
-	bool isArray = jsonRef.isArray();
+	const ofJson & jsonRef = *json;
+	bool isArray = jsonRef.is_array();
 	int c = 0;
-	for( auto itr = jsonRef.begin(); itr != jsonRef.end(); itr++ ) {
-
+	//for( auto itr = jsonRef.begin(); itr != jsonRef.end(); itr++ ) {
+	for (auto& el : jsonRef.items()){
 		if(c >= start && c <= end){
 
 			arg.threadID = config.threadID;
 			if(isArray){
-				arg.objectID = "Object_" + ofToString(c);
-				arg.jsonObj = (ofxJSONElement *) &(*itr);
+				arg.objectID = "obj_" + ofToString(c);
+				arg.jsonObj = (ofJson *) &(el.value());
 			}else{
-				arg.jsonObj = (ofxJSONElement *) &(*itr);
-				if(itr.key().isConvertibleTo(Json::stringValue)){
-					arg.objectID = itr.key().asString();
-				}else{
-					arg.objectID = ofToString(c);
-				}
+				arg.jsonObj = (ofJson *) &(el.value());
+				arg.objectID = el.key();
 			}
 
 			arg.object = nullptr; //user is supposed to create that object
@@ -96,7 +93,7 @@ void ofxMtJsonParserThread::threadedFunction(){
 		}
 		c++;
 	}
-	sleep(16); //FIXME: this is here just to workaround an ofThread issue where some exceptions get thrown when thread life is very short
+	ofSleepMillis(5); //FIXME: this is here just to workaround an ofThread issue where some exceptions get thrown when thread life is very short
 }
 
 

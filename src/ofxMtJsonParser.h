@@ -10,9 +10,9 @@
 
 #include "ofMain.h"
 #include "ofxSimpleHttp.h"
-#include "ofxJSON.h"
 #include "ofxMtJsonParserThread.h"
 #include "ofxMtJsonParsedObject.h"
+#include "ofxMtJsonParserUtils.h"
 #include "ofEvents.h"
 #include "ofEventUtils.h"
 
@@ -27,7 +27,7 @@ public:
 						  int numThreads_,
 						  std::function<void (ofxMtJsonParserThread::JsonStructureData &)> describeJsonFunc,
 						  std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectFunc,
-						  const ofxJSON & userData
+						  const ofJson & userData
 						);
 
 	void update();
@@ -69,8 +69,9 @@ protected:
 	};
 
 	string jsonAbsolutePath;
-	ofxJSONElement * json = nullptr;
-	ofxJSONElement * jsonObjectArray = nullptr;
+	ofJson json;
+	ofJson * jsonObjArray = nullptr; //points somewhere inside the json above, into its array of obj to parse
+
 
 	int numEntriesInJson;
 
@@ -102,6 +103,6 @@ protected:
 	vector<ParsedObject*> parsedObjects;
 	bool parsing = false;
 	bool shouldStartParsingInSubThreads; //var shared with thread
-	ofxJSON userData; //holds any data the user wants to be able to get from within the thread
+	ofJson userData; //holds any data the user wants to be able to get from within the thread
 };
 

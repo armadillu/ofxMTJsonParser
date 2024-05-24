@@ -5,6 +5,11 @@ void ofApp::setup(){
 
 	ofBackground(22);
 
+	ofJson j = ofLoadJson("test.json");
+	ofJson & j2 = j["one"];
+	ofLog() << j.dump(4) << endl;
+	ofLog() << j2.dump(4) << endl;
+
 	//subscribe to parsing events - event list still wip
 	ofAddListener(jsonParser.eventJsonDownloaded, this, &ofApp::jsonDownloaded);
 	ofAddListener(jsonParser.eventJsonDownloadFailed, this, &ofApp::jsonDownloadFailed);
@@ -12,8 +17,8 @@ void ofApp::setup(){
 	ofAddListener(jsonParser.eventJsonParseFailed, this, &ofApp::jsonParseFailed);
 	ofAddListener(jsonParser.eventAllObjectsParsed, this, &ofApp::jsonContentReady);
 
-	string jsonURL = "file://api.objects.latest.json";
-	//jsonURL = "http://ch-localprojects.s3.amazonaws.com/json_data/api.objects.latest.json"
+	string jsonURL = "http://ch-localprojects.s3.amazonaws.com/json_data/api.objects.latest.json";
+	jsonURL = "file://api.objects.latest.json";
 
 	//config the http downloader if you need to (proxy, etc)
 	//jsonParser.getHttp().setSpeedLimit(50000); // kb/sec
@@ -24,11 +29,11 @@ void ofApp::setup(){
 	//you will have to do minor parsing here, just let us know where the object array is inside the JSON
 	auto describeJsonStructureLambda = [](ofxMtJsonParserThread::JsonStructureData & inOutData){
 
-		ofxJSONElement & jsonRef = *(inOutData.fullJson); //pointers mess up the json syntax somehow
+		ofJson & jsonRef = *(inOutData.fullJson); //pointers mess up the json syntax somehow
 		//here I am getting the full plain json file; bc I know its schema, I can dig into what
 		//I want to find the # of objects in the json, and to point the parser into that big array
 		//of objects
-		if(jsonRef.isArray()){
+		if(jsonRef.is_array()){
 			inOutData.objectArray = &(jsonRef);//in this case, the object array is at root level in the JSON
 			//in other cases, it might be deeper into the structure, you would
 			//need to navigate ie data.objectArray = jsonRef["data"]["objects"]
@@ -37,7 +42,7 @@ void ofApp::setup(){
 
 			ofLogError("MyJsonParserThread") << "JSON has unexpected format!";
 			//if the json is not what we exepcted it to be, let the parser know by filling it the data like this:
-			inOutData.objectArray = NULL;
+			inOutData.objectArray = nullptr;
 		}
 	};
 
@@ -48,7 +53,7 @@ void ofApp::setup(){
 	//you will have to alloc and "fill in" data into a new object from the json obj we provide
 	auto parseSingleObjectLambda = [](ofxMtJsonParserThread::SingleObjectParseData & inOutData){
 
-		const ofxJSONElement & jsonRef = *(inOutData.jsonObj); //pointers mess up the json syntax somehow
+		const ofJson & jsonRef = *(inOutData.jsonObj); //pointers mess up the json syntax somehow
 
 		//syncronized logging possible
 		//inOutData.printMutex->lock();//as this method gets called from concurrent threads, you might want to
@@ -83,11 +88,11 @@ void ofApp::setup(){
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-	ofxJSON userData;
+	ofJson userData;
 	//start the download and parse process, providing your custom lambdas
 	jsonParser.downloadAndParse(jsonURL, 	//json url
 								"json", 		//directory where to save the json file
-								8, 				//num threads to parse on
+								10, 				//num threads to parse on
 								describeJsonStructureLambda,//your lambda to describe the JSON structure
 								parseSingleObjectLambda,	//your lambda to parse each of the objects in the JSON
 								userData					//pass any data you require to each individual parser
@@ -113,7 +118,7 @@ void ofApp::jsonParseFailed(){
 
 void ofApp::jsonContentReady(vector<ParsedObject*> & parsedObjects_){
 
-	ofLogNotice("ofApp") << "content ready!";
+	ofLogNotice("ofApp") << "content ready! " << ofGetElapsedTimef();
 
 	//This will hold your vector of parsed objects, MyParseableObject*
 	vector<MyParseableObject*> parsedObjects;
