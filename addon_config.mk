@@ -1,5 +1,5 @@
 meta:
-	ADDON_NAME = ofxMTJsonParser
+	ADDON_NAME = ofxMtJsonParser
 	ADDON_DESCRIPTION = OpenFrameworks addon to download and parse json across multiple threads
 	ADDON_AUTHOR = Oriol Ferrer Mesià
 	ADDON_TAGS = "json" "thread" "download" 
