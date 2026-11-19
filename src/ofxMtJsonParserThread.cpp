@@ -22,7 +22,7 @@ ofxMtJsonParserThread::ofxMtJsonParserThread(){
 void ofxMtJsonParserThread::startParsing(	ofJson * json_,
 											ofxMtJsonParserThread::Config config_,
 											ofMutex * printMutex_,
-										 	std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseOneObject,
+										  const std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)>& parseOneObject,
 											ofJson * userData
 										 ){
 

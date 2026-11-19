@@ -7,6 +7,7 @@
 //
 
 #include "ofxMtJsonParser.h"
+#include <utility>
 
 string ofxMtJsonParser::getDrawableState(){
 
@@ -101,14 +102,14 @@ void ofxMtJsonParser::downloadAndParse(string jsonURL_, string jsonDownloadDir_,
 	this->userData = userData;
 	shouldStartParsingInSubThreads = false;
 	parsing = true;
-	pointToObjects = describeJsonFunc;
-	parseOneObject = parseSingleObjectFunc;
+	pointToObjects = std::move(describeJsonFunc);
+	parseOneObject = std::move(parseSingleObjectFunc);
 	numEntriesInJson = 0;
 	jsonObjArray = nullptr;
 	json = ofJson();
 	numThreads = ofClamp(numThreads_, 1, INT_MAX);
-	jsonDownloadDir = jsonDownloadDir_;
-	jsonURL = jsonURL_;
+	jsonDownloadDir = std::move(jsonDownloadDir_);
+	jsonURL = std::move(jsonURL_);
 	ofLogNotice("ofxMtJsonParser") << "Start download and parse of JSON '" << jsonURL << "' across " << numThreads << " threads.";
 	setState(DOWNLOADING_JSON);
 }

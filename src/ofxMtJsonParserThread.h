@@ -57,7 +57,7 @@ public:
 	void startParsing(ofJson * json_,
 					  ofxMtJsonParserThread::Config config,
 					  ofMutex * printMutex_,
-					  std::function<void (SingleObjectParseData &)> parseOneObject,
+					  const std::function<void (SingleObjectParseData &)>& parseOneObject,
 					  ofJson * userData
 					  );
 
