@@ -86,7 +86,7 @@ vector<ParsedObject*> ofxMtJsonParser::getParsedObjects(){
 }
 
 
-void ofxMtJsonParser::downloadAndParse(string jsonURL_, string jsonDownloadDir_, int numThreads_ ,
+void ofxMtJsonParser::downloadAndParse(const string & jsonURL_, const string & jsonDownloadDir_, int numThreads_ ,
 									   std::function<void (ofxMtJsonParserThread::JsonStructureData &)> describeJsonFunc,
 									   std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectFunc,
 									   const ofJson & userData){
@@ -108,8 +108,8 @@ void ofxMtJsonParser::downloadAndParse(string jsonURL_, string jsonDownloadDir_,
 	jsonObjArray = nullptr;
 	json = ofJson();
 	numThreads = ofClamp(numThreads_, 1, INT_MAX);
-	jsonDownloadDir = std::move(jsonDownloadDir_);
-	jsonURL = std::move(jsonURL_);
+	jsonDownloadDir = jsonDownloadDir_;
+	jsonURL = jsonURL_;
 	ofLogNotice("ofxMtJsonParser") << "Start download and parse of JSON '" << jsonURL << "' across " << numThreads << " threads.";
 	setState(DOWNLOADING_JSON);
 }
@@ -133,7 +133,7 @@ void ofxMtJsonParser::checkLocalJsonAndSplitWorkload(){ //this runs on a thread
 		args.fullJson = &json;
 		try{
 			pointToObjects(args);
-		}catch(std::exception E){
+		}catch(const std::exception & E){
 			ofLogError("ofxMtJsonParser") << E.what();
 		}
 
@@ -203,7 +203,7 @@ void ofxMtJsonParser::mergeThreadResults(){
 	parsedObjects.clear();
 
 	for(int i = 0; i < threads.size(); i++){
-		vector<ParsedObject*> threadObjects = threads[i]->getParsedObjects();
+		const vector<ParsedObject*> & threadObjects = threads[i]->getParsedObjectsRef();
 		parsedObjects.insert(parsedObjects.begin(), threadObjects.begin(), threadObjects.end());
 	}
 }
@@ -226,7 +226,7 @@ void ofxMtJsonParser::setState(State s){
 		case CHECKING_JSON:
 			try{
 				startThread();
-			}catch(std::exception e){
+			}catch(const std::exception & e){
 				ofLogError("ofxMtJsonParser") << e.what();
 			}
 			break;
@@ -246,7 +246,7 @@ void ofxMtJsonParser::setState(State s){
 		case MERGE_THREAD_RESULTS:
 			try{
 				startThread();
-			}catch(std::exception e){
+			}catch(const std::exception & e){
 				ofLogError("ofxMtJsonParser") << e.what();
 			}
 			break;

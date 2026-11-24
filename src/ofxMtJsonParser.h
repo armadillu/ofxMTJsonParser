@@ -22,8 +22,8 @@ public:
 
 	ofxMtJsonParser();
 
-	void downloadAndParse(string jsonURL_,
-						  string jsonDownloadDir_,
+	void downloadAndParse(const string & jsonURL_,
+						  const string & jsonDownloadDir_,
 						  int numThreads_,
 						  std::function<void (ofxMtJsonParserThread::JsonStructureData &)> describeJsonFunc,
 						  std::function<void (ofxMtJsonParserThread::SingleObjectParseData &)> parseSingleObjectFunc,

@@ -69,6 +69,7 @@ public:
 
 	//only call when Thread is finished, or you will get crashes
 	std::vector<ParsedObject*> getParsedObjects(){return parsedObjects;}
+	const std::vector<ParsedObject*> & getParsedObjectsRef() const {return parsedObjects;}
 
 protected:
 
